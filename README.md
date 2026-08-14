@@ -115,7 +115,7 @@ LocalWhale 不读取、复制或迁移 Harness API Key。日志会脱敏 token�
 ```powershell
 dotnet test .\LocalWhale.slnx -c Release
 dotnet build .\LocalWhale.slnx -c Release
-node --test .\bridge\test\desktop-bridge.test.mjs
+node --test .\bridge\test\bridge.test.mjs
 .\tools\Build-Release.ps1
 ```
 
@@ -187,7 +187,7 @@ On Windows 11 x64 with the .NET 10 SDK:
 ```powershell
 dotnet test .\LocalWhale.slnx -c Release
 dotnet build .\LocalWhale.slnx -c Release
-node --test .\bridge\test\desktop-bridge.test.mjs
+node --test .\bridge\test\bridge.test.mjs
 .\tools\Build-Release.ps1
 ```
 

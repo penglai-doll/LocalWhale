@@ -13,7 +13,7 @@
 ## Validation / 验证
 
 - [ ] `dotnet test .\LocalWhale.slnx -c Release`
-- [ ] `node --test .\bridge\test\desktop-bridge.test.mjs`
+- [ ] `node --test .\bridge\test\bridge.test.mjs`
 - [ ] Release desktop shell builds on Windows 11 x64
 - [ ] No API keys, `%USERPROFILE%\.dsh`, logs, generated runtimes, or installer artifacts are included
 
