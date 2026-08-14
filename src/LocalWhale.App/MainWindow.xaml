@@ -1,0 +1,134 @@
+<Window
+    x:Class="LocalWhale.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="RootGrid" Loaded="RootGrid_Loaded">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid
+            x:Name="AppTitleBar"
+            Grid.Row="0"
+            Height="48"
+            Padding="12,0,12,0"
+            Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="18" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Border Width="28" Height="28" CornerRadius="8" Background="{ThemeResource AccentFillColorDefaultBrush}">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontFamily="Segoe UI Emoji"
+                    FontSize="16"
+                    Text="🐋" />
+            </Border>
+            <TextBlock
+                Grid.Column="1"
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                FontSize="14"
+                FontWeight="SemiBold"
+                Text="LocalWhale" />
+            <Ellipse
+                x:Name="StatusDot"
+                Grid.Column="3"
+                Width="8"
+                Height="8"
+                VerticalAlignment="Center"
+                Fill="{ThemeResource SystemFillColorCautionBrush}" />
+            <StackPanel Grid.Column="4" Margin="8,0,0,0" VerticalAlignment="Center">
+                <TextBlock x:Name="ConnectionText" FontSize="12" Text="正在启动 Harness" />
+                <TextBlock x:Name="VersionText" FontSize="10" Opacity="0.65" Text="Shell 0.1.0 · Harness —" />
+            </StackPanel>
+            <Button
+                x:Name="MoreButton"
+                Grid.Column="6"
+                Width="36"
+                Height="32"
+                VerticalAlignment="Center"
+                ToolTipService.ToolTip="LocalWhale 菜单">
+                <Button.Content>
+                    <FontIcon Glyph="&#xE712;" />
+                </Button.Content>
+                <Button.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedRight">
+                        <ToggleMenuFlyoutItem x:Name="CloseToTrayItem" Text="关闭时最小化到托盘" Click="CloseToTrayItem_Click" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Text="检查 Harness 更新" Click="CheckUpdates_Click">
+                            <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE895;" /></MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="重启 Harness" Click="RestartHarness_Click">
+                            <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE777;" /></MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="打开日志" Click="OpenLogs_Click">
+                            <MenuFlyoutItem.Icon><FontIcon Glyph="&#xED25;" /></MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Text="关于 LocalWhale" Click="About_Click" />
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
+        </Grid>
+
+        <WebView2
+            x:Name="HarnessWebView"
+            Grid.Row="1"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            NavigationCompleted="HarnessWebView_NavigationCompleted" />
+
+        <Grid
+            x:Name="StartupOverlay"
+            Grid.Row="1"
+            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                <ProgressRing x:Name="StartupProgress" Width="42" Height="42" IsActive="True" />
+                <TextBlock x:Name="StartupTitle" HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold" Text="正在唤醒 Harness" />
+                <TextBlock x:Name="StartupDetail" HorizontalAlignment="Center" Opacity="0.68" Text="后台服务通过健康检查后会自动进入界面" />
+                <StackPanel x:Name="RecoveryActions" HorizontalAlignment="Center" Orientation="Horizontal" Spacing="8" Visibility="Collapsed">
+                    <Button Content="重试" Click="Retry_Click" />
+                    <Button Content="打开日志" Click="OpenLogs_Click" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <Border
+            x:Name="UpdateCard"
+            Grid.Row="1"
+            Width="360"
+            Margin="0,0,24,24"
+            Padding="18"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="12"
+            Visibility="Collapsed">
+            <StackPanel Spacing="12">
+                <TextBlock x:Name="UpdateTitle" FontSize="15" FontWeight="SemiBold" Text="Harness 更新已就绪" />
+                <TextBlock x:Name="UpdateDescription" TextWrapping="Wrap" />
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+                    <Button Content="忽略此版本" Click="IgnoreUpdate_Click" />
+                    <Button Content="稍后" Click="LaterUpdate_Click" />
+                    <Button x:Name="ApplyUpdateButton" Style="{StaticResource AccentButtonStyle}" Content="更新" Click="ApplyUpdate_Click" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+    </Grid>
+</Window>

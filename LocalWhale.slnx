@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/LocalWhale.Core/LocalWhale.Core.csproj" />
+  <Project Path="src/LocalWhale.App/LocalWhale.App.csproj" />
+  <Project Path="tests/LocalWhale.Core.Tests/LocalWhale.Core.Tests.csproj" />
+</Solution>

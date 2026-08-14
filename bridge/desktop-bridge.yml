@@ -1,0 +1,9 @@
+- insert:
+  - id: localwhale-desktop-bridge
+    name: '@localwhale/dsh-desktop-bridge'
+    inject:
+      - webServer
+    config:
+      token: !!js process.env.LOCALWHALE_BRIDGE_TOKEN
+      harnessVersion: !!js process.env.LOCALWHALE_HARNESS_VERSION
+      pid: !!js process.pid

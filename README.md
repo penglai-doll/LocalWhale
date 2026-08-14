@@ -150,7 +150,7 @@ licenses/                 上游 MIT License 与第三方声明
 
 ### 当前状态与资源观测
 
-这是面向个人本机使用的首个公开版本。开发机 Release x64 验收样本中，冷启动约 3 秒、Harness Node 私有内存约 123 MiB、完全退出约 0.2 秒；安装发布目录约 395 MiB。外壳与 WebView2 的工作集会受 WebView2 版本、页面内容、GPU 和系统缓存影响，这些数字是单机观测而不是跨机器保证。
+这是面向个人本机使用的首个公开 preview。开发机 Release x64 二次稳定验收样本中，启动约 1.85 秒、Harness Node 私有内存约 121 MiB、空闲 CPU 约 0.013%、完全退出约 0.53 秒；安装发布目录约 395 MiB。外壳私有内存约 110 MiB，外壳、Harness 与 WebView2 后代进程的工作集直接求和约 684 MiB（其中会重复计算共享页），尚未达到最初的 90 MiB / 350 MiB 资源目标。WebView2 版本、页面内容、GPU 和系统缓存都会显著影响这些数字；它们是单机观测，不是跨机器保证。
 
 当前不支持 Windows 10、ARM64、Microsoft Store、跨平台、公开更新签名或完整 DeepSeek fork。
 

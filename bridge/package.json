@@ -1,0 +1,14 @@
+{
+  "name": "@localwhale/dsh-desktop-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "files": [
+    "src/index.js"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "MIT"
+}
