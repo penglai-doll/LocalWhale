@@ -3,6 +3,7 @@
 [![Platform](https://img.shields.io/badge/platform-Windows%2011%20x64-0078D4?logo=windows11)](https://www.microsoft.com/windows/windows-11)
 [![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Harness](https://img.shields.io/badge/DeepSeek%20Harness-0.1.0--rc.6-5B5BD6)](https://github.com/deepseek-ai/deepseek-harness)
+[![CI](https://github.com/penglai-doll/LocalWhale/actions/workflows/ci.yml/badge.svg)](https://github.com/penglai-doll/LocalWhale/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **把官方 DeepSeek Harness WebUI 变成一个真正的 Windows 桌面应用。** 运行 `LocalWhale.exe`，应用会在后台隐藏启动随包携带的 Node/Harness 服务，健康检查通过后再显示官方页面。
@@ -32,7 +33,7 @@
 
 支持范围：**Windows 11 x64**。
 
-1. 打开本仓库的 **Releases** 页面。
+1. 打开本仓库的 [**Releases** 页面](https://github.com/penglai-doll/LocalWhale/releases/latest)。
 2. 下载 `LocalWhale-Setup-x64.exe`，可同时下载 `SHA256SUMS.txt` 校验文件。
 3. 运行标准安装向导。安装目录页始终显示，可选择任意有写入权限的位置；默认目录为 `%LOCALAPPDATA%\Programs\LocalWhale`。
 4. 可选创建桌面快捷方式，安装完成后启动 LocalWhale。
@@ -172,7 +173,7 @@ LocalWhale packages the official DeepSeek Harness WebUI as a Windows 11 x64 desk
 
 ### Install
 
-Download `LocalWhale-Setup-x64.exe` from this repository's Releases page. The per-user Inno Setup wizard always shows the destination directory page and defaults to `%LOCALAPPDATA%\Programs\LocalWhale`. No system Node, pnpm, .NET Runtime, or network connection is required for first launch.
+Download `LocalWhale-Setup-x64.exe` from this repository's [Releases page](https://github.com/penglai-doll/LocalWhale/releases/latest). The per-user Inno Setup wizard always shows the destination directory page and defaults to `%LOCALAPPDATA%\Programs\LocalWhale`. No system Node, pnpm, .NET Runtime, or network connection is required for first launch.
 
 The initial personal release is unsigned. Download only from this repository and compare the installer against `SHA256SUMS.txt` when Windows reports an unknown publisher.
 
