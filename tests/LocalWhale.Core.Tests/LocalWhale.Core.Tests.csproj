@@ -25,5 +25,8 @@
     <Content Include="Fixtures/fake-harness-startup-failure.mjs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Fixtures/fake-harness-profile-race.mjs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
