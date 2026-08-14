@@ -1,0 +1,83 @@
+name: Bug report / 缺陷报告
+description: Report a reproducible LocalWhale problem / 报告可复现的问题
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve LocalWhale. Please remove API keys, tokens, private conversations, and the contents of `%USERPROFILE%\.dsh` before attaching logs.
+
+        感谢帮助改进 LocalWhale。上传日志前请删除 API Key、token、私人会话以及 `%USERPROFILE%\.dsh` 的内容。
+
+  - type: input
+    id: localwhale-version
+    attributes:
+      label: LocalWhale version / 版本
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: harness-version
+    attributes:
+      label: DeepSeek Harness version / 版本
+      placeholder: 0.1.0-rc.6
+    validations:
+      required: true
+
+  - type: input
+    id: windows-version
+    attributes:
+      label: Windows version / Windows 版本
+      placeholder: Windows 11 24H2 (26100.x)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Installation type / 安装方式
+      options:
+        - Release installer / Release 安装包
+        - Source build / 源码构建
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened? / 发生了什么？
+      description: Include the exact message and what you expected instead. / 请附准确报错和预期行为。
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps / 复现步骤
+      placeholder: |
+        1. Launch LocalWhale
+        2. Open ...
+        3. See ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Redacted log tail / 脱敏后的日志末尾
+      description: Use the title-bar menu to open logs. Do not paste secrets or private session data. / 从标题栏菜单打开日志，请勿粘贴敏感信息。
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist / 检查项
+      options:
+        - label: I searched existing issues. / 我已搜索现有 Issue。
+          required: true
+        - label: I removed secrets and private data. / 我已删除密钥与私人数据。
+          required: true
+        - label: I can reproduce this on Windows 11 x64. / 我可以在 Windows 11 x64 复现。
+          required: true

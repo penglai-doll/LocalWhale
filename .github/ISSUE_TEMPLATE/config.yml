@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: DeepSeek Harness upstream issues
+    url: https://github.com/deepseek-ai/deepseek-harness/issues
+    about: Report behavior that also reproduces in the official Harness without LocalWhale.
