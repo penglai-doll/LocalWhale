@@ -10,9 +10,11 @@
 
 **A native Windows desktop shell for the official DeepSeek Harness WebUI.** Launch `LocalWhale.exe`; it starts the bundled Node/Harness service in the background and opens the upstream UI after an authenticated health check succeeds.
 
-> LocalWhale 是独立的社区项目，与 DeepSeek 没有隶属或官方背书关系。DeepSeek Harness 页面及信息架构保持原样，不注入 CSS，不使用 iframe，也不 fork 官方前端。
+> LocalWhale 是独立的社区项目，与 DeepSeek 没有隶属或官方背书关系。DeepSeek Harness 页面及信息架构保持原样，不注入 CSS，不使用 iframe，也不 fork 官方前端。LocalWhale 图标与鲸鱼娘角色是本项目的原创社区视觉资产，不代表 DeepSeek 官方形象。
 
-![LocalWhale 主界面 / main window](docs/images/localwhale-main.jpg)
+| 默认 Fluent 主题 / Original | 可选鲸鱼娘主题 / WhaleGirl |
+|---|---|
+| ![LocalWhale v0.1.1 默认主题](docs/images/localwhale-v0.1.1-original.png) | ![LocalWhale v0.1.1 鲸鱼娘主题](docs/images/localwhale-v0.1.1-whale-girl.png) |
 
 ## 中文说明
 
@@ -23,6 +25,8 @@
 - 双击 EXE 即用，不要求系统已安装 Node、pnpm 或 .NET Runtime。
 - 后台服务不弹终端窗口；随机监听 `127.0.0.1` 端口，不暴露到局域网。
 - 原生 Windows 11 Fluent 标题栏、Mica 背景、系统窗口按钮和高 DPI 命中区。
+- EXE、任务栏、Alt+Tab、托盘和安装器统一使用简洁的 LocalWhale 鲸尾图标。
+- 默认保持克制的 Fluent 外观，也可以从标题栏菜单切换到鲸鱼娘主题。
 - WebView2 直接加载官方 Harness 页面，宿主不修改官方前端。
 - 默认关闭窗口即完全退出；可切换为关闭到系统托盘。
 - 退出时优先请求 Harness 优雅关闭，超时后由 Job Object 清理整棵子进程树。
@@ -39,6 +43,14 @@
 4. 可选创建桌面快捷方式，安装完成后启动 LocalWhale。
 
 安装器是按用户安装，不请求管理员权限；Node 24、pnpm、Harness、WinUI 运行文件和 WebView2 Evergreen 离线安装器都已随包携带。首个个人发布版本未进行商业代码签名，因此 Windows 可能显示“未知发布者”提示，请只从本仓库 Release 下载并核对 SHA-256。
+
+### 外观与主题
+
+v0.1.1 使用 Windows App SDK 的原生 `TitleBar`、Mica、Fluent 卡片和 `InfoBar` 重新整理了桌面宿主。默认的“默认主题”跟随 Windows 浅色、深色与高对比度设置；“鲸鱼娘主题”使用海军蓝、长春花蓝与冰青配色，并只在启动、恢复与关于界面显示本项目原创角色。窗口窄于 760 逻辑像素或系统处于高对比度模式时，角色装饰会自动隐藏，让文字和操作按钮保持清晰。
+
+主题只影响 LocalWhale 自己的标题栏、启动/恢复卡片、更新提示和关于对话框。WebView2 中的官方 Harness DOM、CSS、页面结构及插件界面完全不变。可在右上角 `…` →“外观主题”即时切换；选择会写入 `%LOCALAPPDATA%\LocalWhale\settings.json`，重启后继续使用。
+
+从 v0.1.0 覆盖安装时，旧设置文件没有主题字段也能直接读取，并默认选择“默认主题”；关闭行为、忽略的 Harness 版本与上次更新检查时间都会保留。此迁移不会读取、移动或重写 `%USERPROFILE%\.dsh`。
 
 ### 启动与退出流程
 
@@ -143,7 +155,7 @@ licenses/                 上游 MIT License 与第三方声明
 
 | 组件 | 版本 |
 |---|---:|
-| LocalWhale | 0.1.0 |
+| LocalWhale | 0.1.1 |
 | DeepSeek Harness | 0.1.0-rc.6 |
 | Node.js | 24.18.1 |
 | pnpm | 11.7.0 |
@@ -151,7 +163,7 @@ licenses/                 上游 MIT License 与第三方声明
 
 ### 当前状态与资源观测
 
-这是面向个人本机使用的首个公开 preview。开发机 Release x64 二次稳定验收样本中，启动约 1.85 秒、Harness Node 私有内存约 121 MiB、空闲 CPU 约 0.013%、完全退出约 0.53 秒；安装发布目录约 395 MiB。外壳私有内存约 110 MiB，外壳、Harness 与 WebView2 后代进程的工作集直接求和约 684 MiB（其中会重复计算共享页），尚未达到最初的 90 MiB / 350 MiB 资源目标。WebView2 版本、页面内容、GPU 和系统缓存都会显著影响这些数字；它们是单机观测，不是跨机器保证。
+这是面向个人本机使用的公开 preview。v0.1.0 开发机 Release x64 二次稳定验收样本中，启动约 1.85 秒、Harness Node 私有内存约 121 MiB、空闲 CPU 约 0.013%、完全退出约 0.53 秒；安装发布目录约 395 MiB。外壳私有内存约 110 MiB，外壳、Harness 与 WebView2 后代进程的工作集直接求和约 684 MiB（其中会重复计算共享页），尚未达到最初的 90 MiB / 350 MiB 资源目标。v0.1.1 的鲸鱼娘 PNG 解码后理论像素占用约 5.2 MiB，并且默认主题不会加载该图片。WebView2 版本、页面内容、GPU 和系统缓存都会显著影响这些数字；它们是单机观测，不是跨机器保证。
 
 当前不支持 Windows 10、ARM64、Microsoft Store、跨平台、公开更新签名或完整 DeepSeek fork。
 
@@ -162,6 +174,8 @@ licenses/                 上游 MIT License 与第三方声明
 LocalWhale packages the official DeepSeek Harness WebUI as a Windows 11 x64 desktop experience:
 
 - native WinUI 3 shell with a Fluent title bar and Mica backdrop;
+- one simple LocalWhale mark across the executable, taskbar, Alt+Tab, tray, and installer;
+- an Original theme by default plus an optional WhaleGirl host theme;
 - WebView2 hosting without CSS injection, iframe wrapping, or upstream UI changes;
 - bundled Node, pnpm, Harness, and an offline WebView2 installer;
 - hidden service startup on a random loopback port;
@@ -176,6 +190,12 @@ LocalWhale packages the official DeepSeek Harness WebUI as a Windows 11 x64 desk
 Download `LocalWhale-Setup-x64.exe` from this repository's [Releases page](https://github.com/penglai-doll/LocalWhale/releases/latest). The per-user Inno Setup wizard always shows the destination directory page and defaults to `%LOCALAPPDATA%\Programs\LocalWhale`. No system Node, pnpm, .NET Runtime, or network connection is required for first launch.
 
 The initial personal release is unsigned. Download only from this repository and compare the installer against `SHA256SUMS.txt` when Windows reports an unknown publisher.
+
+### Appearance and v0.1.0 upgrades
+
+Version 0.1.1 adopts the Windows App SDK `TitleBar`, Fluent startup/recovery cards, and a native `InfoBar` for Harness updates. Original remains the default and follows Windows light, dark, and high-contrast modes. WhaleGirl is opt-in from `…` → **Appearance theme** and adds the project's original, AI-assisted community character only to host-owned startup, recovery, and About surfaces. The artwork collapses in narrow windows and is disabled in high contrast.
+
+Neither theme injects styles or scripts into WebView2. The upstream Harness DOM, CSS, information architecture, and client plugins remain unchanged. A v0.1.0 `settings.json` without a theme field migrates to Original while preserving close behavior, ignored Harness versions, and the last update-check time. Official data and credentials in `%USERPROFILE%\.dsh` are never read, moved, or rewritten by this migration.
 
 ### Privacy and local data
 
@@ -204,4 +224,4 @@ Before submitting a change, run both the .NET and bridge test suites. Never comm
 
 LocalWhale source code is available under the [MIT License](LICENSE). DeepSeek Harness remains under its upstream MIT License; its license copy and other redistributed-component notices are in [`licenses/`](licenses/).
 
-DeepSeek and related marks belong to their respective owners. LocalWhale is an independent community project and is not affiliated with, endorsed by, or sponsored by DeepSeek.
+DeepSeek and related marks belong to their respective owners. LocalWhale is an independent community project and is not affiliated with, endorsed by, or sponsored by DeepSeek. The LocalWhale mark and WhaleGirl character are original community-project assets and are not official DeepSeek branding.
