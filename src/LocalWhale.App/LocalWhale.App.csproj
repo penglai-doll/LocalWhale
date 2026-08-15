@@ -21,6 +21,7 @@
     <ILLinkTreatWarningsAsErrors>false</ILLinkTreatWarningsAsErrors>
     <NoWarn>$(NoWarn);IL2104</NoWarn>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\LocalWhale.ico</ApplicationIcon>
     <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <Version>0.1.0</Version>
@@ -35,6 +36,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../LocalWhale.Core/LocalWhale.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\LocalWhale.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="../../bridge/package.json" Link="bridge/package.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

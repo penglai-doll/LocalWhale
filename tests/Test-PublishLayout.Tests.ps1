@@ -18,6 +18,7 @@ function New-ValidPublishFixture {
         'LocalWhale.pri',
         'MainWindow.xbf',
         'LICENSE',
+        'Assets\LocalWhale.ico',
         'bridge\package.json',
         'bridge\src\index.js',
         'bridge\desktop-bridge.yml',
@@ -69,6 +70,13 @@ try {
     Remove-Item -LiteralPath (Join-Path $missing 'runtime\node\node.exe') -Force
     Assert-ThrowsLike -Pattern '*missing required file*runtime\node\node.exe*' -Action {
         & $validator -PublishDirectory $missing -MaximumBytes 1MB | Out-Null
+    }
+
+    $missingIcon = Join-Path $testRoot 'missing-icon'
+    New-ValidPublishFixture -Path $missingIcon
+    Remove-Item -LiteralPath (Join-Path $missingIcon 'Assets\LocalWhale.ico') -Force
+    Assert-ThrowsLike -Pattern '*missing required file*Assets\LocalWhale.ico*' -Action {
+        & $validator -PublishDirectory $missingIcon -MaximumBytes 1MB | Out-Null
     }
 
     $oversized = Join-Path $testRoot 'oversized'

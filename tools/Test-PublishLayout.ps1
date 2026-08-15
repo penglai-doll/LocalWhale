@@ -16,6 +16,7 @@ $requiredFiles = @(
     'LocalWhale.pri',
     'MainWindow.xbf',
     'LICENSE',
+    'Assets\LocalWhale.ico',
     'bridge\package.json',
     'bridge\src\index.js',
     'bridge\desktop-bridge.yml',

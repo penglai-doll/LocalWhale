@@ -64,8 +64,12 @@ public sealed partial class MainWindow : Window
         var windowHandle = WindowNative.GetWindowHandle(this);
         var windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
         _appWindow = AppWindow.GetFromWindowId(windowId);
+        var applicationIconPath = Path.GetFullPath(
+            Path.Combine(AppContext.BaseDirectory, "Assets", "LocalWhale.ico"));
+        _appWindow.SetIcon(applicationIconPath);
         _trayIcon = new NativeTrayIcon(
             windowHandle,
+            applicationIconPath,
             ShowAndActivate,
             () => _ = RestartHarnessAsync(),
             () => _ = ExitAsync());

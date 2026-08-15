@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace LocalWhale.App;
@@ -22,11 +23,15 @@ internal sealed class NativeTrayIcon : IDisposable
     private const uint CommandShow = 1;
     private const uint CommandRestart = 2;
     private const uint CommandExit = 3;
+    private const uint ImageIcon = 1;
+    private const uint LoadFromFile = 0x0010;
+    private const uint LoadDefaultSize = 0x0040;
 
     private readonly IntPtr _window;
     private readonly Action _showWindow;
     private readonly Action _restartHarness;
     private readonly Action _exitApplication;
+    private readonly IntPtr _icon;
     private readonly WindowProc _windowProc;
     private readonly IntPtr _previousWindowProc;
     private readonly uint _taskbarCreatedMessage;
@@ -35,6 +40,7 @@ internal sealed class NativeTrayIcon : IDisposable
 
     public NativeTrayIcon(
         IntPtr window,
+        string iconPath,
         Action showWindow,
         Action restartHarness,
         Action exitApplication)
@@ -43,6 +49,17 @@ internal sealed class NativeTrayIcon : IDisposable
         _showWindow = showWindow;
         _restartHarness = restartHarness;
         _exitApplication = exitApplication;
+        _icon = LoadImage(
+            IntPtr.Zero,
+            Path.GetFullPath(iconPath),
+            ImageIcon,
+            0,
+            0,
+            LoadFromFile | LoadDefaultSize);
+        if (_icon == IntPtr.Zero)
+        {
+            throw new Win32Exception(Marshal.GetLastWin32Error(), "Windows could not load the LocalWhale tray icon.");
+        }
         _taskbarCreatedMessage = RegisterWindowMessage("TaskbarCreated");
         _windowProc = ProcessWindowMessage;
         _previousWindowProc = SetWindowLongPtr(
@@ -79,6 +96,7 @@ internal sealed class NativeTrayIcon : IDisposable
         }
 
         SetWindowLongPtr(_window, WindowProcIndex, _previousWindowProc);
+        DestroyIcon(_icon);
     }
 
     private IntPtr ProcessWindowMessage(IntPtr window, uint message, IntPtr wParam, IntPtr lParam)
@@ -156,7 +174,7 @@ internal sealed class NativeTrayIcon : IDisposable
         Id = 1,
         Flags = NotifyMessage | NotifyIcon | NotifyTip,
         CallbackMessage = CallbackMessage,
-        Icon = LoadIcon(IntPtr.Zero, (IntPtr)32512),
+        Icon = _icon,
         Tip = "LocalWhale"
     };
 
@@ -205,8 +223,18 @@ internal sealed class NativeTrayIcon : IDisposable
     [DllImport("user32.dll")]
     private static extern IntPtr CallWindowProc(IntPtr previous, IntPtr window, uint message, IntPtr wParam, IntPtr lParam);
 
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "LoadImageW", SetLastError = true)]
+    private static extern IntPtr LoadImage(
+        IntPtr instance,
+        string name,
+        uint type,
+        int desiredWidth,
+        int desiredHeight,
+        uint loadFlags);
+
     [DllImport("user32.dll")]
-    private static extern IntPtr LoadIcon(IntPtr instance, IntPtr iconName);
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool DestroyIcon(IntPtr icon);
 
     [DllImport("user32.dll")]
     private static extern IntPtr CreatePopupMenu();

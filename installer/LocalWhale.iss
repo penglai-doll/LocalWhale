@@ -21,6 +21,7 @@ Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 SetupLogging=yes
+SetupIconFile=..\src\LocalWhale.App\Assets\LocalWhale.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 VersionInfoVersion={#MyAppVersion}.0
 VersionInfoDescription=LocalWhale Setup
