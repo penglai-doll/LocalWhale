@@ -19,6 +19,7 @@ function New-ValidPublishFixture {
         'MainWindow.xbf',
         'LICENSE',
         'Assets\LocalWhale.ico',
+        'Assets\Themes\WhaleGirl\WhaleGirlPortrait.png',
         'bridge\package.json',
         'bridge\src\index.js',
         'bridge\desktop-bridge.yml',
@@ -77,6 +78,13 @@ try {
     Remove-Item -LiteralPath (Join-Path $missingIcon 'Assets\LocalWhale.ico') -Force
     Assert-ThrowsLike -Pattern '*missing required file*Assets\LocalWhale.ico*' -Action {
         & $validator -PublishDirectory $missingIcon -MaximumBytes 1MB | Out-Null
+    }
+
+    $missingPortrait = Join-Path $testRoot 'missing-portrait'
+    New-ValidPublishFixture -Path $missingPortrait
+    Remove-Item -LiteralPath (Join-Path $missingPortrait 'Assets\Themes\WhaleGirl\WhaleGirlPortrait.png') -Force
+    Assert-ThrowsLike -Pattern '*missing required file*Assets\Themes\WhaleGirl\WhaleGirlPortrait.png*' -Action {
+        & $validator -PublishDirectory $missingPortrait -MaximumBytes 1MB | Out-Null
     }
 
     $oversized = Join-Path $testRoot 'oversized'

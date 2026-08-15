@@ -17,6 +17,7 @@ $requiredFiles = @(
     'MainWindow.xbf',
     'LICENSE',
     'Assets\LocalWhale.ico',
+    'Assets\Themes\WhaleGirl\WhaleGirlPortrait.png',
     'bridge\package.json',
     'bridge\src\index.js',
     'bridge\desktop-bridge.yml',

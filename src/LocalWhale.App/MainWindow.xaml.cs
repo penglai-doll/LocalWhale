@@ -12,8 +12,10 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Web.WebView2.Core;
 using Windows.Graphics;
+using Windows.UI.ViewManagement;
 using WinRT.Interop;
 
 namespace LocalWhale.App;
@@ -38,6 +40,10 @@ public sealed partial class MainWindow : Window
     private HarnessUpdate? _availableUpdate;
     private StagedRuntime? _stagedRuntime;
     private CancellationTokenSource? _stableRuntimeCancellation;
+    private BitmapImage? _whaleGirlPortraitSource;
+
+    private static readonly Uri WhaleGirlPortraitUri =
+        new("ms-appx:///Assets/Themes/WhaleGirl/WhaleGirlPortrait.png", UriKind.Absolute);
 
     public MainWindow()
     {
@@ -114,6 +120,7 @@ public sealed partial class MainWindow : Window
         CloseToTrayItem.IsChecked = _settings.CloseBehavior == CloseBehavior.MinimizeToTray;
         _themeService.Apply(_settings.VisualTheme);
         UpdateThemeMenuChecks();
+        UpdateThemeArtwork();
         await StartHarnessAsync();
     }
 
@@ -278,6 +285,7 @@ public sealed partial class MainWindow : Window
         _themeService.Apply(theme);
         _settings = _settings with { VisualTheme = theme };
         UpdateThemeMenuChecks();
+        UpdateThemeArtwork();
         await _settingsStore.SaveAsync(_settings);
     }
 
@@ -285,6 +293,43 @@ public sealed partial class MainWindow : Window
     {
         OriginalThemeItem.IsChecked = _themeService.CurrentTheme == VisualTheme.Original;
         WhaleGirlThemeItem.IsChecked = _themeService.CurrentTheme == VisualTheme.WhaleGirl;
+    }
+
+    private void RootGrid_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateThemeArtwork();
+
+    private void UpdateThemeArtwork()
+    {
+        var isHighContrast = false;
+        try
+        {
+            isHighContrast = new AccessibilitySettings().HighContrast;
+        }
+        catch
+        {
+            // Theme resources still provide the high-contrast fallback if the query is unavailable.
+        }
+
+        var showPortrait =
+            _themeService.CurrentTheme == VisualTheme.WhaleGirl &&
+            RootGrid.ActualWidth >= 760 &&
+            !isHighContrast;
+
+        if (showPortrait)
+        {
+            _whaleGirlPortraitSource ??= new BitmapImage(WhaleGirlPortraitUri);
+            WhaleGirlPortrait.Source = _whaleGirlPortraitSource;
+            WhaleGirlPortrait.Opacity =
+                Application.Current.Resources["WhaleGirlDecorationOpacity"] is double opacity
+                    ? opacity
+                    : 0.9;
+            WhaleGirlPortrait.Visibility = Visibility.Visible;
+            WhaleGirlPortraitColumn.Width = new GridLength(320);
+            return;
+        }
+
+        WhaleGirlPortrait.Source = null;
+        WhaleGirlPortrait.Visibility = Visibility.Collapsed;
+        WhaleGirlPortraitColumn.Width = new GridLength(0);
     }
 
     private async void RestartHarness_Click(object sender, RoutedEventArgs e) => await RestartHarnessAsync();
@@ -315,10 +360,11 @@ public sealed partial class MainWindow : Window
     {
         if (manual)
         {
-            UpdateTitle.Text = "正在检查 Harness 更新";
-            UpdateDescription.Text = "正在联系官方 npm registry…";
+            UpdateInfoBar.Title = "正在检查 Harness 更新";
+            UpdateInfoBar.Message = "正在联系官方 npm registry…";
+            UpdateInfoBar.Severity = InfoBarSeverity.Informational;
             ApplyUpdateButton.IsEnabled = false;
-            UpdateCard.Visibility = Visibility.Visible;
+            UpdateInfoBar.IsOpen = true;
         }
 
         try
@@ -329,36 +375,39 @@ public sealed partial class MainWindow : Window
             {
                 if (!manual)
                 {
-                    UpdateCard.Visibility = Visibility.Collapsed;
+                    UpdateInfoBar.IsOpen = false;
                     return;
                 }
 
-                UpdateTitle.Text = "Harness 已是最新版";
-                UpdateDescription.Text = $"当前版本 {_runtimeState.ActiveVersion}，无需更新。";
+                UpdateInfoBar.Title = "Harness 已是最新版";
+                UpdateInfoBar.Message = $"当前版本 {_runtimeState.ActiveVersion}，无需更新。";
+                UpdateInfoBar.Severity = InfoBarSeverity.Informational;
                 ApplyUpdateButton.IsEnabled = false;
                 return;
             }
 
             _stagedRuntime = null;
-            UpdateTitle.Text = "发现 Harness 更新";
-            UpdateDescription.Text = $"官方 npm 提供 {_availableUpdate.AvailableVersion}；更新前会在临时目录完成安装、脚本白名单和启动冒烟。";
+            UpdateInfoBar.Title = "发现 Harness 更新";
+            UpdateInfoBar.Message = $"官方 npm 提供 {_availableUpdate.AvailableVersion}；更新前会在临时目录完成安装、脚本白名单和启动冒烟。";
+            UpdateInfoBar.Severity = InfoBarSeverity.Informational;
             ApplyUpdateButton.Content = "更新";
             ApplyUpdateButton.IsEnabled = true;
-            UpdateCard.Visibility = Visibility.Visible;
+            UpdateInfoBar.IsOpen = true;
         }
         catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
         {
             _logger.Write($"Harness update check unavailable: {exception.Message}");
             if (manual)
             {
-                UpdateTitle.Text = "暂时无法检查更新";
-                UpdateDescription.Text = "npm registry 当前不可用；现用 Harness 不受影响。";
+                UpdateInfoBar.Title = "暂时无法检查更新";
+                UpdateInfoBar.Message = "npm registry 当前不可用；现用 Harness 不受影响。";
+                UpdateInfoBar.Severity = InfoBarSeverity.Warning;
                 ApplyUpdateButton.IsEnabled = false;
             }
         }
     }
 
-    private void LaterUpdate_Click(object sender, RoutedEventArgs e) => UpdateCard.Visibility = Visibility.Collapsed;
+    private void LaterUpdate_Click(object sender, RoutedEventArgs e) => UpdateInfoBar.IsOpen = false;
 
     private async void IgnoreUpdate_Click(object sender, RoutedEventArgs e)
     {
@@ -372,7 +421,7 @@ public sealed partial class MainWindow : Window
                     .ToArray()
             };
         }
-        UpdateCard.Visibility = Visibility.Collapsed;
+        UpdateInfoBar.IsOpen = false;
         await _settingsStore.SaveAsync(_settings);
     }
 
@@ -384,11 +433,13 @@ public sealed partial class MainWindow : Window
         {
             if (_stagedRuntime is null)
             {
-                UpdateTitle.Text = "正在验证 Harness 更新";
-                UpdateDescription.Text = "正在生成锁文件、校验 integrity、离线安装并启动候选实例；当前会话不会中断。";
+                UpdateInfoBar.Title = "正在验证 Harness 更新";
+                UpdateInfoBar.Message = "正在生成锁文件、校验 integrity、离线安装并启动候选实例；当前会话不会中断。";
+                UpdateInfoBar.Severity = InfoBarSeverity.Informational;
                 _stagedRuntime = await _updateService.StageAndValidateAsync(_availableUpdate.AvailableVersion, CancellationToken.None);
-                UpdateTitle.Text = "Harness 更新已验证";
-                UpdateDescription.Text = $"{_stagedRuntime.Version} 已通过 bridge、首页插件和优雅关闭冒烟。可以重启切换。";
+                UpdateInfoBar.Title = "Harness 更新已验证";
+                UpdateInfoBar.Message = $"{_stagedRuntime.Version} 已通过 bridge、首页插件和优雅关闭冒烟。可以重启切换。";
+                UpdateInfoBar.Severity = InfoBarSeverity.Success;
                 ApplyUpdateButton.Content = "重启并应用";
                 ApplyUpdateButton.IsEnabled = true;
                 return;
@@ -396,15 +447,16 @@ public sealed partial class MainWindow : Window
 
             await _updateService.ActivateOnRestartAsync(_stagedRuntime, CancellationToken.None);
             _runtimeState = await _runtimeStateStore.LoadAsync() ?? _runtimeState;
-            UpdateCard.Visibility = Visibility.Collapsed;
+            UpdateInfoBar.IsOpen = false;
             await _runtimeManager.StopAsync(CancellationToken.None);
             await StartHarnessAsync();
         }
         catch (Exception exception)
         {
             _logger.Write($"Harness update failed: {exception}");
-            UpdateTitle.Text = "Harness 更新不兼容";
-            UpdateDescription.Text = LogRedactor.Redact(exception.Message) + "\n现用版本保持不变。";
+            UpdateInfoBar.Title = "Harness 更新不兼容";
+            UpdateInfoBar.Message = LogRedactor.Redact(exception.Message) + "\n现用版本保持不变。";
+            UpdateInfoBar.Severity = InfoBarSeverity.Error;
             ApplyUpdateButton.IsEnabled = false;
         }
     }
@@ -421,10 +473,74 @@ public sealed partial class MainWindow : Window
         {
             XamlRoot = RootGrid.XamlRoot,
             Title = "LocalWhale",
-            Content = $"轻量的 DeepSeek Harness 桌面外壳\nShell {GetShellVersion()}\nHarness {_runtimeState.ActiveVersion}\n\n官方 WebUI 保持原样，数据仍保存在 ~/.dsh。",
+            Content = CreateAboutContent(),
             CloseButtonText = "关闭"
         };
         await dialog.ShowAsync();
+    }
+
+    private FrameworkElement CreateAboutContent()
+    {
+        var content = new StackPanel { Spacing = 12, MaxWidth = 440 };
+        var identity = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12 };
+        identity.Children.Add(new Image
+        {
+            Width = 48,
+            Height = 48,
+            Source = new BitmapImage(new Uri("ms-appx:///Assets/Brand/LocalWhaleMark-32.png"))
+        });
+        var versions = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        versions.Children.Add(new TextBlock
+        {
+            Text = "LocalWhale",
+            FontSize = 20,
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
+        });
+        versions.Children.Add(new TextBlock
+        {
+            Text = $"Shell {GetShellVersion()} · Harness {_runtimeState.ActiveVersion}",
+            Foreground = (Brush)Application.Current.Resources["ShellMutedForegroundBrush"]
+        });
+        identity.Children.Add(versions);
+        content.Children.Add(identity);
+        content.Children.Add(new TextBlock
+        {
+            Text = "LocalWhale 是独立社区桌面外壳；官方 Harness WebUI 保持原样，用户数据仍由 ~/.dsh 管理。",
+            TextWrapping = TextWrapping.Wrap
+        });
+        content.Children.Add(new HyperlinkButton
+        {
+            Content = "GitHub · penglai-doll/LocalWhale",
+            NavigateUri = new Uri("https://github.com/penglai-doll/LocalWhale"),
+            Padding = new Thickness(0)
+        });
+
+        if (_themeService.CurrentTheme == VisualTheme.WhaleGirl)
+        {
+            _whaleGirlPortraitSource ??= new BitmapImage(WhaleGirlPortraitUri);
+            var character = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 12
+            };
+            character.Children.Add(new Image
+            {
+                Width = 88,
+                Height = 100,
+                Source = _whaleGirlPortraitSource,
+                Stretch = Stretch.Uniform
+            });
+            character.Children.Add(new TextBlock
+            {
+                Text = "LocalWhale 原创社区角色（AI 辅助设计）",
+                VerticalAlignment = VerticalAlignment.Center,
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 260
+            });
+            content.Children.Add(character);
+        }
+
+        return content;
     }
 
     private async void Retry_Click(object sender, RoutedEventArgs e)

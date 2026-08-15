@@ -10,7 +10,7 @@
             <SolidColorBrush x:Key="ShellAccentBrush" Color="#425BB5" />
             <SolidColorBrush x:Key="ShellAccentForegroundBrush" Color="#FFFFFF" />
             <SolidColorBrush x:Key="ShellMutedForegroundBrush" Color="#52627E" />
-            <x:Double x:Key="WhaleGirlDecorationOpacity">0.22</x:Double>
+            <x:Double x:Key="WhaleGirlDecorationOpacity">0.92</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <SolidColorBrush x:Key="ShellTitleBarBackgroundBrush" Color="#66152249" />
@@ -20,7 +20,7 @@
             <SolidColorBrush x:Key="ShellAccentBrush" Color="#8ACBFF" />
             <SolidColorBrush x:Key="ShellAccentForegroundBrush" Color="#10162D" />
             <SolidColorBrush x:Key="ShellMutedForegroundBrush" Color="#B8C6E5" />
-            <x:Double x:Key="WhaleGirlDecorationOpacity">0.18</x:Double>
+            <x:Double x:Key="WhaleGirlDecorationOpacity">0.86</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="ShellTitleBarBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
