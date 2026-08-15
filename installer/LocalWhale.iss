@@ -63,20 +63,25 @@ begin
   Result := (Version <> '') and (Version <> '0.0.0.0');
 end;
 
-procedure InitializeSetup();
+function InitializeSetup(): Boolean;
 var
-  Deadline: Longint;
+  Attempts: Integer;
 begin
   RestartAfterInstall := Pos('/RESTARTAPP', UpperCase(GetCmdTail())) > 0;
-  if not RestartAfterInstall then
-    exit;
-
-  // The staged shell update launches this installer while LocalWhale is still
-  // running and exits right after. Wait for its single-instance mutex to be
-  // released before overwriting files, so no fixed delay is needed.
-  Deadline := GetTickCount + 15000;
-  while CheckForMutexes(LocalWhaleMutexName) and (GetTickCount < Deadline) do
-    Sleep(250);
+  if RestartAfterInstall then
+  begin
+    // The staged shell update launches this installer while LocalWhale is still
+    // running and exits right after. Wait for its single-instance mutex to be
+    // released before overwriting files, so no fixed delay is needed.
+    // Bounded to 60 x 250 ms = 15 s.
+    Attempts := 0;
+    while CheckForMutexes(LocalWhaleMutexName) and (Attempts < 60) do
+    begin
+      Sleep(250);
+      Attempts := Attempts + 1;
+    end;
+  end;
+  Result := True;
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
