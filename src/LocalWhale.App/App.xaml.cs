@@ -69,7 +69,7 @@ public partial class App : Application
         {
             staged = await StagedShellUpdateStore.LoadAsync(updatesDirectory);
             if (staged is null) return false;
-            if (!File.Exists(staged.SetupPath))
+            if (!TryValidateStagedSetupPath(staged.SetupPath, updatesDirectory, out var setupPath))
             {
                 ClearStagedShellUpdate(updatesDirectory, staged);
                 return false;
@@ -82,28 +82,34 @@ public partial class App : Application
                 return false;
             }
 
+            if (!IsSafePathArgument(paths.InstallDirectory))
+            {
+                ClearStagedShellUpdate(updatesDirectory, staged);
+                return false;
+            }
+
             if (!File.Exists(Path.Combine(paths.InstallDirectory, "LocalWhale.exe")))
             {
                 ClearStagedShellUpdate(updatesDirectory, staged);
                 return false;
             }
 
-            var actualSha256 = await ComputeSha256HexAsync(staged.SetupPath);
+            var actualSha256 = await ComputeSha256HexAsync(setupPath);
             if (!string.Equals(actualSha256, staged.SetupSha256, StringComparison.Ordinal))
             {
                 ClearStagedShellUpdate(updatesDirectory, staged);
                 return false;
             }
 
-            var commandShell = Environment.GetEnvironmentVariable("ComSpec") ?? "cmd.exe";
-            var installerArguments =
-                $"/c ping -n 3 127.0.0.1 >nul & \"{staged.SetupPath}\" /SILENT /SP- /DIR=\"{paths.InstallDirectory}\" /RESTARTAPP";
+            // Launch the installer directly with an argument string (never a shell):
+            // the installer waits for the LocalWhale.MainWindow mutex to be released
+            // before overwriting files, so no process-exit race delay is needed here.
             using var installer = Process.Start(new ProcessStartInfo
             {
-                FileName = commandShell,
-                Arguments = installerArguments,
-                CreateNoWindow = true,
-                UseShellExecute = false
+                FileName = setupPath,
+                Arguments = $"/SILENT /SP- /DIR=\"{paths.InstallDirectory}\" /RESTARTAPP",
+                UseShellExecute = false,
+                CreateNoWindow = true
             });
             return installer is not null;
         }
@@ -113,6 +119,31 @@ public partial class App : Application
             if (staged is not null) ClearStagedShellUpdate(updatesDirectory, staged);
             return false;
         }
+    }
+
+    /// <summary>
+    /// The marker lives in user-writable storage, so the staged setup path is untrusted
+    /// until it is confirmed to be the canonical setup file inside the updates directory.
+    /// </summary>
+    private static bool TryValidateStagedSetupPath(string setupPath, string updatesDirectory, out string validatedPath)
+    {
+        validatedPath = string.Empty;
+        if (!IsSafePathArgument(setupPath)) return false;
+        if (!Path.GetFileName(setupPath).Equals(ShellUpdateService.SetupAssetFileName, StringComparison.OrdinalIgnoreCase)) return false;
+
+        var fullSetupPath = Path.GetFullPath(setupPath);
+        var fullUpdatesRoot = Path.GetFullPath(updatesDirectory);
+        if (!fullSetupPath.StartsWith(fullUpdatesRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) return false;
+
+        validatedPath = fullSetupPath;
+        return true;
+    }
+
+    private static bool IsSafePathArgument(string path)
+    {
+        return !string.IsNullOrWhiteSpace(path) &&
+            Path.IsPathRooted(path) &&
+            path.IndexOfAny(['"', '\r', '\n', '\t']) < 0;
     }
 
     private static bool TryCompareVersions(string currentVersion, string targetVersion, out bool targetIsNewer)
@@ -132,13 +163,17 @@ public partial class App : Application
     private static void ClearStagedShellUpdate(string updatesDirectory, StagedShellUpdate staged)
     {
         StagedShellUpdateStore.Clear(updatesDirectory);
-        try
+        // The marker is user-writable storage; only ever delete inside the updates directory.
+        if (TryValidateStagedSetupPath(staged.SetupPath, updatesDirectory, out var setupPath))
         {
-            File.Delete(staged.SetupPath);
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            // Leftover payloads are removed by the uninstaller with %LOCALAPPDATA%\LocalWhale.
+            try
+            {
+                File.Delete(setupPath);
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                // Leftover payloads are removed by the uninstaller with %LOCALAPPDATA%\LocalWhale.
+            }
         }
     }
 

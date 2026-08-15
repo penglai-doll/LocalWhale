@@ -52,6 +52,9 @@ Filename: "{app}\{#MyAppExeName}"; Description: "启动 LocalWhale"; Flags: nowa
 Type: filesandordirs; Name: "{localappdata}\LocalWhale"
 
 [Code]
+const
+  LocalWhaleMutexName = 'Local\LocalWhale.MainWindow';
+
 var
   RestartAfterInstall: Boolean;
 
@@ -61,8 +64,19 @@ begin
 end;
 
 procedure InitializeSetup();
+var
+  Deadline: Longint;
 begin
-  RestartAfterInstall := Pos('/RESTARTAPP', GetCmdTail()) > 0;
+  RestartAfterInstall := Pos('/RESTARTAPP', UpperCase(GetCmdTail())) > 0;
+  if not RestartAfterInstall then
+    exit;
+
+  // The staged shell update launches this installer while LocalWhale is still
+  // running and exits right after. Wait for its single-instance mutex to be
+  // released before overwriting files, so no fixed delay is needed.
+  Deadline := GetTickCount + 15000;
+  while CheckForMutexes(LocalWhaleMutexName) and (GetTickCount < Deadline) do
+    Sleep(250);
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
