@@ -483,7 +483,7 @@ public sealed partial class MainWindow : Window
         try
         {
             var notification = new AppNotificationBuilder()
-                .AddText("LocalWhale 外壳有新版本")
+                .AddText("LocalWhale 本地客户端有新版本")
                 .AddText($"v{_availableShellUpdate.AvailableVersion} 已发布；下载校验完成后，重启 LocalWhale 即自动安装。")
                 .BuildNotification();
             AppNotificationManager.Default.Show(notification);
@@ -507,31 +507,31 @@ public sealed partial class MainWindow : Window
         {
             if (_stagedShellUpdate is not null)
             {
-                return $"外壳更新已就绪（v{_stagedShellUpdate.Version}）：重启 LocalWhale 后自动安装。";
+                return $"本地客户端更新已就绪（v{_stagedShellUpdate.Version}）：重启 LocalWhale 后自动安装。";
             }
 
             _availableShellUpdate = await _shellUpdateService.CheckAsync(manual, CancellationToken.None);
             _settings = await _settingsStore.LoadAsync();
             if (_availableShellUpdate is null)
             {
-                return manual ? $"外壳已是最新版（当前 {GetShellVersion()}）。" : string.Empty;
+                return manual ? $"本地客户端已是最新版（当前 {GetShellVersion()}）。" : string.Empty;
             }
 
             ShowShellUpdateDiscovered();
             TryShowShellUpdateToast();
-            return $"发现外壳更新 v{_availableShellUpdate.AvailableVersion}，可在右下角提示中下载。";
+            return $"发现本地客户端更新 v{_availableShellUpdate.AvailableVersion}，可在右下角提示中下载。";
         }
         catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or InvalidDataException or System.Text.Json.JsonException)
         {
             _logger.Write($"Shell update check unavailable: {exception.Message}");
-            return manual ? "暂时无法检查外壳更新：GitHub 当前不可访问，现用版本不受影响。" : string.Empty;
+            return manual ? "暂时无法检查本地客户端更新：GitHub 当前不可访问，现用版本不受影响。" : string.Empty;
         }
     }
 
     private void ShowShellUpdateDiscovered()
     {
         ShellUpdateCard.Severity = InfoBarSeverity.Informational;
-        ShellUpdateCard.Title = $"发现外壳新版本 v{_availableShellUpdate!.AvailableVersion}";
+        ShellUpdateCard.Title = $"发现本地客户端新版本 v{_availableShellUpdate!.AvailableVersion}";
         ShellUpdateCard.Message = $"当前 {GetShellVersion()}；下载并完成 SHA-256 校验后，重启 LocalWhale 即自动安装。";
         ShellUpdateActionButton.Content = "下载更新";
         ShellUpdateActionButton.IsEnabled = true;
@@ -561,7 +561,7 @@ public sealed partial class MainWindow : Window
         ShellUpdateActionButton.IsEnabled = false;
         ShellUpdateActionButton.Content = "正在下载…";
         ShellUpdateCard.Severity = InfoBarSeverity.Informational;
-        ShellUpdateCard.Title = "正在下载外壳更新";
+        ShellUpdateCard.Title = "正在下载本地客户端更新";
         ShellUpdateCard.Message = $"v{_availableShellUpdate.AvailableVersion} · 正在校验下载源…";
         ShellUpdateProgress.Value = 0;
         ShellUpdateProgress.Visibility = Visibility.Visible;
@@ -574,7 +574,7 @@ public sealed partial class MainWindow : Window
         {
             _stagedShellUpdate = await _shellUpdateService.DownloadAndStageAsync(_availableShellUpdate, progress, CancellationToken.None);
             ShellUpdateCard.Severity = InfoBarSeverity.Success;
-            ShellUpdateCard.Title = "外壳更新已就绪";
+            ShellUpdateCard.Title = "本地客户端更新已就绪";
             ShellUpdateCard.Message = $"v{_stagedShellUpdate.Version} 已通过 SHA-256 校验；重启 LocalWhale 后自动安装并回到新版本。";
             ShellUpdateActionButton.Content = "立即重启";
             ShellUpdateActionButton.IsEnabled = true;
@@ -585,7 +585,7 @@ public sealed partial class MainWindow : Window
         {
             _logger.Write($"Shell update download failed: {exception}");
             ShellUpdateCard.Severity = InfoBarSeverity.Error;
-            ShellUpdateCard.Title = "外壳更新下载失败";
+            ShellUpdateCard.Title = "本地客户端更新下载失败";
             ShellUpdateCard.Message = $"{LogRedactor.Redact(exception.Message)}\n当前版本不受影响，可稍后重试。";
             ShellUpdateActionButton.Content = "重试";
             ShellUpdateActionButton.IsEnabled = true;
@@ -697,7 +697,7 @@ public sealed partial class MainWindow : Window
         content.Children.Add(identity);
         content.Children.Add(new TextBlock
         {
-            Text = "LocalWhale 是独立社区桌面外壳；官方 Harness WebUI 保持原样，用户数据仍由 ~/.dsh 管理。",
+            Text = "LocalWhale 是独立社区本地客户端；官方 Harness WebUI 保持原样，用户数据仍由 ~/.dsh 管理。",
             TextWrapping = TextWrapping.Wrap
         });
         content.Children.Add(new HyperlinkButton

@@ -36,7 +36,7 @@ public sealed partial class SettingsDialog : ContentDialog
         if (_checkingShellUpdates) return;
         _checkingShellUpdates = true;
         CheckShellUpdatesButton.IsEnabled = false;
-        ShellCheckStatusText.Text = "正在检查外壳更新…";
+        ShellCheckStatusText.Text = "正在检查本地客户端更新…";
         try
         {
             ShellCheckStatusText.Text = await _callbacks.CheckShellUpdates();
@@ -59,8 +59,8 @@ public sealed partial class SettingsDialog : ContentDialog
         _callbacks = callbacks;
         CloseToTrayToggle.IsOn = state.CloseBehavior == CloseBehavior.MinimizeToTray;
         HarnessVersionText.Text = $"当前 {state.HarnessVersion}";
-        ShellVersionText.Text = $"Shell {state.ShellVersion} · 独立社区项目，与 DeepSeek 无隶属关系";
-        ShellVersionRowText.Text = $"当前 Shell {state.ShellVersion}（GitHub 最新发布）";
+        ShellVersionText.Text = $"本地客户端 {state.ShellVersion} · 独立社区项目，与 DeepSeek 无隶属关系";
+        ShellVersionRowText.Text = $"当前本地客户端 {state.ShellVersion}（GitHub 最新发布）";
         ShellUpdateCheckToggle.IsOn = state.ShellUpdateCheckEnabled;
         if (state.VisualTheme == VisualTheme.WhaleGirl)
         {

@@ -37,7 +37,7 @@ LocalWhale is a native Windows 11 host built with **.NET 10, WinUI 3, and the Wi
 | **官方界面原样保留 / Upstream UI preserved** | 不注入 CSS、不套 iframe、不 fork Harness 前端；主题仅作用于 WinUI 宿主。 |
 | **离线即用 / Self-contained** | 安装包内置 Node、pnpm、Harness、.NET 运行文件和 WebView2 Evergreen 离线安装器。 |
 | **桌面级生命周期 / Desktop lifecycle** | 隐藏启动、单实例、随机本机端口、托盘、优雅关闭、Job Object 清场、更新验证与回滚。 |
-| **外壳自更新 / Shell self-update** | 检查 GitHub 最新发布，点击下载并逐字节校验 SHA-256；下次重启静默安装并自动回到新版。 |
+| **本地客户端自更新 / Shell self-update** | 检查 GitHub 最新发布，点击下载并逐字节校验 SHA-256；下次重启静默安装并自动回到新版。 |
 | **独立重启与设置 / Restart & settings** | 标题栏独立的 Harness 重启按钮与设置对话框；关闭到托盘、主题、更新检查与日志收纳于设置。 |
 
 > LocalWhale 是独立的社区项目，与 DeepSeek 没有隶属或官方背书关系。DeepSeek Harness 页面及信息架构保持原样，不注入 CSS，不使用 iframe，也不 fork 官方前端。LocalWhale 图标与鲸鱼娘角色是本项目的原创社区视觉资产，不代表 DeepSeek 官方形象。
@@ -50,7 +50,7 @@ LocalWhale is a native Windows 11 host built with **.NET 10, WinUI 3, and the Wi
 
 ### 为什么做 LocalWhale
 
-官方 Harness 提供的是本地 WebUI，直接使用时通常需要自己管理 Node、包管理器、终端窗口、端口和服务退出。LocalWhale 把这些“启动器日常任务”收进一个原生 WinUI 3 外壳：
+官方 Harness 提供的是本地 WebUI，直接使用时通常需要自己管理 Node、包管理器、终端窗口、端口和服务退出。LocalWhale 把这些“启动器日常任务”收进一个原生 WinUI 3 本地客户端：
 
 - **WinUI 3 原生桌面体验：** 使用 Windows App SDK `TitleBar`、Mica、Fluent 控件、系统窗口按钮、Snap 和高 DPI 命中区。
 - **双击 EXE 即用：** 不要求系统已安装 Node、pnpm 或 .NET Runtime。
@@ -61,7 +61,7 @@ LocalWhale is a native Windows 11 host built with **.NET 10, WinUI 3, and the Wi
 - WebView2 直接加载官方 Harness 页面，宿主不修改官方前端。
 - 默认关闭窗口即完全退出；可切换为关闭到系统托盘。
 - 退出时优先请求 Harness 优雅关闭，超时后由 Job Object 清理整棵子进程树。
-- Harness 与桌面外壳独立版本管理，候选 Harness 更新需先通过隔离冒烟测试。
+- Harness 与本地客户端独立版本管理，候选 Harness 更新需先通过隔离冒烟测试。
 - 首次创建官方 profile 时若遇到已知的模块链接竞态，LocalWhale 会保留诊断并仅自动重试一次。
 
 ### 下载与安装
@@ -111,7 +111,7 @@ bridge 只增加两个本机宿主端点：
 | LocalWhale 设置与运行状态 | `%LOCALAPPDATA%\LocalWhale` | 删除 |
 | WebView2 用户数据 | `%LOCALAPPDATA%\LocalWhale\webview2` | 删除 |
 | Harness 版本与更新 staging | `%LOCALAPPDATA%\LocalWhale\runtimes` | 删除 |
-| 外壳更新安装包暂存 | `%LOCALAPPDATA%\LocalWhale\updates` | 删除 |
+| 本地客户端更新安装包暂存 | `%LOCALAPPDATA%\LocalWhale\updates` | 删除 |
 | 脱敏日志 | `%LOCALAPPDATA%\LocalWhale\logs` | 删除 |
 
 LocalWhale 不读取、复制或迁移 Harness API Key。日志会脱敏 token、密钥形式的参数和敏感环境变量，并保留最多 14 天、总量不超过 50 MiB。
@@ -122,9 +122,9 @@ LocalWhale 不读取、复制或迁移 Harness API Key。日志会脱敏 token�
 
 候选版本不会直接覆盖当前版本。更新器会在临时目录中生成锁文件、验证 registry integrity、预取并离线安装，然后使用临时 `DSH_HOME` 和 WebView2 数据目录执行 bridge、首页加载、前端启动错误与优雅关闭冒烟测试。未知生命周期脚本会使候选版被拒绝；验证失败时当前会话和当前已知良好版本保持不变。新版连续启动失败时运行状态策略会回滚到上一版本。
 
-### 外壳更新（v0.1.2 起）
+### 本地客户端更新（v0.1.2 起）
 
-LocalWhale 自身的更新独立于 Harness。设置中可开关“自动检查外壳更新”，默认开启且最多每 24 小时查询一次 GitHub 最新发布，也可在设置里立即检查。发现新版本时会弹出右下角系统通知与应用内更新卡片；点击“下载更新”后，LocalWhale 会下载新版安装包并逐字节校验 SHA-256（与 Release 的 `SHA256SUMS.txt` 比对），校验通过后暂存到 `%LOCALAPPDATA%\LocalWhale\updates`。此后任意一次重启 LocalWhale，都会在进入界面前再次校验暂存包并静默完成覆盖安装，随后自动回到新版；暂存损坏或安装失败会自动清理并照常启动，不影响当前版本。也可以忽略指定版本或选择稍后。
+LocalWhale 自身的更新独立于 Harness。设置中可开关“自动检查本地客户端更新”，默认开启且最多每 24 小时查询一次 GitHub 最新发布，也可在设置里立即检查。发现新版本时会弹出右下角系统通知与应用内更新卡片；点击“下载更新”后，LocalWhale 会下载新版安装包并逐字节校验 SHA-256（与 Release 的 `SHA256SUMS.txt` 比对），校验通过后暂存到 `%LOCALAPPDATA%\LocalWhale\updates`。此后任意一次重启 LocalWhale，都会在进入界面前再次校验暂存包并静默完成覆盖安装，随后自动回到新版；暂存损坏或安装失败会自动清理并照常启动，不影响当前版本。也可以忽略指定版本或选择稍后。
 
 ### 常见问题
 
@@ -197,7 +197,7 @@ licenses/                 上游 MIT License 与第三方声明
 
 ### 当前状态与资源观测
 
-这是面向个人本机使用的公开 preview。v0.1.0 开发机 Release x64 二次稳定验收样本中，启动约 1.85 秒、Harness Node 私有内存约 121 MiB、空闲 CPU 约 0.013%、完全退出约 0.53 秒；安装发布目录约 395 MiB。外壳私有内存约 110 MiB，外壳、Harness 与 WebView2 后代进程的工作集直接求和约 684 MiB（其中会重复计算共享页），尚未达到最初的 90 MiB / 350 MiB 资源目标。v0.1.1 的鲸鱼娘 PNG 解码后理论像素占用约 5.2 MiB，并且默认主题不会加载该图片。WebView2 版本、页面内容、GPU 和系统缓存都会显著影响这些数字；它们是单机观测，不是跨机器保证。
+这是面向个人本机使用的公开 preview。v0.1.0 开发机 Release x64 二次稳定验收样本中，启动约 1.85 秒、Harness Node 私有内存约 121 MiB、空闲 CPU 约 0.013%、完全退出约 0.53 秒；安装发布目录约 395 MiB。本地客户端私有内存约 110 MiB，本地客户端、Harness 与 WebView2 后代进程的工作集直接求和约 684 MiB（其中会重复计算共享页），尚未达到最初的 90 MiB / 350 MiB 资源目标。v0.1.1 的鲸鱼娘 PNG 解码后理论像素占用约 5.2 MiB，并且默认主题不会加载该图片。WebView2 版本、页面内容、GPU 和系统缓存都会显著影响这些数字；它们是单机观测，不是跨机器保证。
 
 当前不支持 Windows 10、ARM64、Microsoft Store、跨平台、公开更新签名或完整 DeepSeek fork。
 

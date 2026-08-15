@@ -10,49 +10,70 @@
     DefaultButton="Close">
 
     <ContentDialog.Resources>
-        <Style x:Key="SettingsRowStyle" TargetType="Border">
-            <Setter Property="Background" Value="{ThemeResource ShellCardBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{ThemeResource ShellCardBorderBrush}" />
+        <Style x:Key="SettingsCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{ThemeResource LayerFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="14,12" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="16,12" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
         </Style>
         <Style x:Key="SettingsSectionHeaderStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{ThemeResource ShellMutedForegroundBrush}" />
-            <Setter Property="Margin" Value="2,12,0,4" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            <Setter Property="Margin" Value="2,14,0,6" />
         </Style>
-        <Style x:Key="SettingsRowTitleStyle" TargetType="TextBlock">
+        <Style x:Key="SettingsCardIconStyle" TargetType="FontIcon">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+        </Style>
+        <Style x:Key="SettingsCardTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style x:Key="SettingsRowDescriptionStyle" TargetType="TextBlock">
+        <Style x:Key="SettingsCardDescriptionStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12" />
-            <Setter Property="Foreground" Value="{ThemeResource ShellMutedForegroundBrush}" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="SettingsStatusTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            <Setter Property="Margin" Value="2,4,0,0" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
     </ContentDialog.Resources>
 
     <ScrollViewer MaxHeight="540">
-        <StackPanel Width="480" Spacing="4">
+        <StackPanel Width="500" Spacing="4">
 
             <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" Text="常规" />
-            <Border Style="{StaticResource SettingsRowStyle}">
-                <Grid ColumnSpacing="12">
+            <Border Style="{StaticResource SettingsCardStyle}">
+                <Grid ColumnSpacing="14">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Spacing="2">
-                        <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="关闭时最小化到托盘" />
-                        <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="关闭窗口时保留托盘图标并在后台继续运行；关闭后可从托盘完全退出。" />
+                    <FontIcon
+                        Grid.Column="0"
+                        Margin="0,2,0,0"
+                        Style="{StaticResource SettingsCardIconStyle}"
+                        Glyph="&#xE7E8;" />
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Style="{StaticResource SettingsCardTitleStyle}" Text="关闭时最小化到托盘" />
+                        <TextBlock Style="{StaticResource SettingsCardDescriptionStyle}" Text="关闭窗口时保留托盘图标并在后台继续运行；关闭后可从托盘完全退出。" />
                     </StackPanel>
                     <ToggleSwitch
                         x:Name="CloseToTrayToggle"
-                        Grid.Column="1"
+                        Grid.Column="2"
                         MinWidth="0"
+                        VerticalAlignment="Center"
                         OffContent=""
                         OnContent=""
                         Toggled="CloseToTrayToggle_Toggled" />
@@ -60,42 +81,65 @@
             </Border>
 
             <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" Text="外观" />
-            <Border Style="{StaticResource SettingsRowStyle}">
-                <StackPanel Spacing="10">
-                    <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="外观主题" />
-                    <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="主题只影响 LocalWhale 自己的标题栏、启动卡片和设置界面；WebView2 中的官方 Harness 界面保持原样。" />
-                    <StackPanel Orientation="Horizontal" Spacing="20">
-                        <RadioButton
-                            x:Name="OriginalThemeRadio"
-                            Checked="ThemeRadio_Checked"
-                            Content="默认主题"
-                            GroupName="VisualTheme" />
-                        <RadioButton
-                            x:Name="WhaleGirlThemeRadio"
-                            Checked="ThemeRadio_Checked"
-                            Content="鲸鱼娘主题"
-                            GroupName="VisualTheme" />
+            <Border Style="{StaticResource SettingsCardStyle}">
+                <Grid ColumnSpacing="14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon
+                        Grid.Column="0"
+                        Margin="0,2,0,0"
+                        Style="{StaticResource SettingsCardIconStyle}"
+                        Glyph="&#xE790;" />
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="10">
+                        <TextBlock Style="{StaticResource SettingsCardTitleStyle}" Text="外观主题" />
+                        <TextBlock Style="{StaticResource SettingsCardDescriptionStyle}" Text="主题只影响 LocalWhale 本地客户端自己的标题栏、启动卡片和设置界面；WebView2 中的官方 Harness 界面保持原样。" />
+                        <StackPanel Orientation="Horizontal" Spacing="20">
+                            <RadioButton
+                                x:Name="OriginalThemeRadio"
+                                Checked="ThemeRadio_Checked"
+                                Content="默认主题"
+                                GroupName="VisualTheme" />
+                            <RadioButton
+                                x:Name="WhaleGirlThemeRadio"
+                                Checked="ThemeRadio_Checked"
+                                Content="鲸鱼娘主题"
+                                GroupName="VisualTheme" />
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" Text="更新" />
-            <Border Style="{StaticResource SettingsRowStyle}">
-                <Grid ColumnSpacing="12">
+            <Border Style="{StaticResource SettingsCardStyle}">
+                <Grid ColumnSpacing="14">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Spacing="2">
-                        <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="自动检查外壳更新" />
-                        <TextBlock
-                            x:Name="ShellVersionRowText"
-                            Style="{StaticResource SettingsRowDescriptionStyle}"
-                            Text="Shell —" />
-                        <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="每天最多自动检查一次 GitHub 最新发布；也可点击右侧按钮立即检查。更新下载并校验后，重启 LocalWhale 即自动安装。" TextWrapping="Wrap" />
-                    </StackPanel>
+                    <FontIcon
+                        Grid.Column="0"
+                        Margin="0,2,0,0"
+                        Style="{StaticResource SettingsCardIconStyle}"
+                        Glyph="&#xE895;" />
                     <StackPanel
                         Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Style="{StaticResource SettingsCardTitleStyle}" Text="自动检查本地客户端更新" />
+                        <TextBlock
+                            x:Name="ShellVersionRowText"
+                            Style="{StaticResource SettingsCardDescriptionStyle}"
+                            Text="当前 —" />
+                        <TextBlock Style="{StaticResource SettingsCardDescriptionStyle}" Text="每天最多自动检查一次 GitHub 最新发布；更新下载并校验后，重启 LocalWhale 即自动安装新版。" />
+                    </StackPanel>
+                    <StackPanel
+                        Grid.Column="2"
                         VerticalAlignment="Center"
                         Orientation="Horizontal"
                         Spacing="12">
@@ -115,28 +159,34 @@
             </Border>
             <TextBlock
                 x:Name="ShellCheckStatusText"
-                Margin="2,0,0,0"
-                FontSize="12"
-                Foreground="{ThemeResource ShellMutedForegroundBrush}"
-                Text=""
-                TextWrapping="Wrap" />
-            <Border Style="{StaticResource SettingsRowStyle}">
-                <Grid ColumnSpacing="12">
+                Style="{StaticResource SettingsStatusTextStyle}"
+                Text="" />
+            <Border Style="{StaticResource SettingsCardStyle}">
+                <Grid ColumnSpacing="14">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Spacing="2">
-                        <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="Harness 更新" />
+                    <FontIcon
+                        Grid.Column="0"
+                        Margin="0,2,0,0"
+                        Style="{StaticResource SettingsCardIconStyle}"
+                        Glyph="&#xE896;" />
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Style="{StaticResource SettingsCardTitleStyle}" Text="Harness 更新" />
                         <TextBlock
                             x:Name="HarnessVersionText"
-                            Style="{StaticResource SettingsRowDescriptionStyle}"
+                            Style="{StaticResource SettingsCardDescriptionStyle}"
                             Text="当前 —" />
-                        <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="检查官方 npm registry；更新前会在临时目录完成安装验证与冒烟测试。" TextWrapping="Wrap" />
+                        <TextBlock Style="{StaticResource SettingsCardDescriptionStyle}" Text="检查官方 npm registry；更新前会在临时目录完成安装验证与冒烟测试。" />
                     </StackPanel>
                     <Button
                         x:Name="CheckHarnessUpdatesButton"
-                        Grid.Column="1"
+                        Grid.Column="2"
                         VerticalAlignment="Center"
                         Click="CheckHarnessUpdatesButton_Click"
                         Content="检查更新" />
@@ -144,25 +194,31 @@
             </Border>
             <TextBlock
                 x:Name="HarnessCheckStatusText"
-                Margin="2,0,0,0"
-                FontSize="12"
-                Foreground="{ThemeResource ShellMutedForegroundBrush}"
-                Text=""
-                TextWrapping="Wrap" />
+                Style="{StaticResource SettingsStatusTextStyle}"
+                Text="" />
 
             <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" Text="诊断" />
-            <Border Style="{StaticResource SettingsRowStyle}">
-                <Grid ColumnSpacing="12">
+            <Border Style="{StaticResource SettingsCardStyle}">
+                <Grid ColumnSpacing="14">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Spacing="2">
-                        <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="日志" />
-                        <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="打开本地日志文件夹。日志经过脱敏，最多保留 14 天且不超过 50 MiB。" />
+                    <FontIcon
+                        Grid.Column="0"
+                        Margin="0,2,0,0"
+                        Style="{StaticResource SettingsCardIconStyle}"
+                        Glyph="&#xED25;" />
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Style="{StaticResource SettingsCardTitleStyle}" Text="日志" />
+                        <TextBlock Style="{StaticResource SettingsCardDescriptionStyle}" Text="打开本地日志文件夹。日志经过脱敏，最多保留 14 天且不超过 50 MiB。" />
                     </StackPanel>
                     <Button
-                        Grid.Column="1"
+                        Grid.Column="2"
                         VerticalAlignment="Center"
                         Click="OpenLogsButton_Click"
                         Content="打开日志" />
@@ -170,21 +226,30 @@
             </Border>
 
             <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" Text="关于" />
-            <Border Style="{StaticResource SettingsRowStyle}">
-                <Grid ColumnSpacing="12">
+            <Border Style="{StaticResource SettingsCardStyle}">
+                <Grid ColumnSpacing="14">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Spacing="2">
-                        <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="LocalWhale" />
+                    <FontIcon
+                        Grid.Column="0"
+                        Margin="0,2,0,0"
+                        Style="{StaticResource SettingsCardIconStyle}"
+                        Glyph="&#xE723;" />
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock Style="{StaticResource SettingsCardTitleStyle}" Text="LocalWhale" />
                         <TextBlock
                             x:Name="ShellVersionText"
-                            Style="{StaticResource SettingsRowDescriptionStyle}"
-                            Text="Shell —" />
+                            Style="{StaticResource SettingsCardDescriptionStyle}"
+                            Text="—" />
                     </StackPanel>
                     <Button
-                        Grid.Column="1"
+                        Grid.Column="2"
                         VerticalAlignment="Center"
                         Click="AboutButton_Click"
                         Content="关于" />

@@ -36,24 +36,26 @@
                         Text="正在启动" />
                     <Button
                         x:Name="RestartHarnessButton"
-                        Width="36"
+                        Width="32"
                         Height="32"
+                        Padding="0"
                         VerticalAlignment="Center"
                         Click="RestartHarnessButton_Click"
                         ToolTipService.ToolTip="重启 Harness（配置更改后需要重启 Web 界面时使用）">
                         <Button.Content>
-                            <FontIcon Glyph="&#xE72C;" />
+                            <FontIcon FontSize="16" Glyph="&#xE72C;" />
                         </Button.Content>
                     </Button>
                     <Button
                         x:Name="SettingsButton"
-                        Width="36"
+                        Width="32"
                         Height="32"
+                        Padding="0"
                         VerticalAlignment="Center"
                         Click="SettingsButton_Click"
                         ToolTipService.ToolTip="设置">
                         <Button.Content>
-                            <FontIcon Glyph="&#xE713;" />
+                            <FontIcon FontSize="16" Glyph="&#xE713;" />
                         </Button.Content>
                     </Button>
                 </StackPanel>
@@ -161,7 +163,7 @@
                 IsClosable="True"
                 IsOpen="False"
                 Severity="Informational"
-                Title="发现外壳新版本">
+                Title="发现本地客户端新版本">
                 <InfoBar.Content>
                     <StackPanel Margin="0,8,0,0" Spacing="8">
                         <ProgressBar
