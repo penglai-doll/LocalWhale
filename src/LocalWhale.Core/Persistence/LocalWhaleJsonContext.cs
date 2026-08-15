@@ -11,4 +11,5 @@ namespace LocalWhale.Core.Persistence;
 [JsonSerializable(typeof(RuntimeManifest))]
 [JsonSerializable(typeof(BridgeHealth))]
 [JsonSerializable(typeof(RuntimePackageJson))]
+[JsonSerializable(typeof(StagedShellUpdate))]
 public sealed partial class LocalWhaleJsonContext : JsonSerializerContext;

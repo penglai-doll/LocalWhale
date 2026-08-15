@@ -22,6 +22,7 @@ public sealed class LocalWhalePaths
     public string StagingDirectory => Path.Combine(LocalDataDirectory, "runtimes", "staging");
     public string WebView2Directory => Path.Combine(LocalDataDirectory, "webview2");
     public string LogsDirectory => Path.Combine(LocalDataDirectory, "logs");
+    public string UpdatesDirectory => Path.Combine(LocalDataDirectory, "updates");
     public string NodeExecutable => Path.Combine(InstallDirectory, "runtime", "node", "node.exe");
     public string PnpmScript => Path.Combine(InstallDirectory, "runtime", "pnpm", "bin", "pnpm.cjs");
     public string BundledHarnessDirectory(string version) => Path.Combine(InstallDirectory, "runtime", "harness", version);
