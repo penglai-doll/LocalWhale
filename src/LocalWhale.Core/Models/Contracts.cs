@@ -9,9 +9,11 @@ public enum CloseBehavior
 public sealed record AppSettings(
     CloseBehavior CloseBehavior,
     IReadOnlyList<string> IgnoredHarnessVersions,
-    DateTimeOffset? LastUpdateCheckUtc)
+    DateTimeOffset? LastUpdateCheckUtc,
+    VisualTheme VisualTheme)
 {
-    public static AppSettings Default { get; } = new(CloseBehavior.Exit, Array.Empty<string>(), null);
+    public static AppSettings Default { get; } =
+        new(CloseBehavior.Exit, Array.Empty<string>(), null, VisualTheme.Original);
 }
 
 public sealed record RuntimeManifest(
