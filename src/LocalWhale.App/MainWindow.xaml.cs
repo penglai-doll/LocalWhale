@@ -117,9 +117,7 @@ public sealed partial class MainWindow : Window
         if (_loaded) return;
         _loaded = true;
         _settings = await _settingsStore.LoadAsync();
-        CloseToTrayItem.IsChecked = _settings.CloseBehavior == CloseBehavior.MinimizeToTray;
         _themeService.Apply(_settings.VisualTheme);
-        UpdateThemeMenuChecks();
         UpdateThemeArtwork();
         await StartHarnessAsync();
     }
@@ -262,35 +260,19 @@ public sealed partial class MainWindow : Window
         GC.Collect(2, GCCollectionMode.Forced, blocking: true, compacting: true);
     }
 
-    private async void CloseToTrayItem_Click(object sender, RoutedEventArgs e)
+    private async Task ApplyCloseBehaviorAsync(CloseBehavior behavior)
     {
-        _settings = _settings with
-        {
-            CloseBehavior = CloseToTrayItem.IsChecked ? CloseBehavior.MinimizeToTray : CloseBehavior.Exit
-        };
+        _settings = _settings with { CloseBehavior = behavior };
         await _settingsStore.SaveAsync(_settings);
-        if (_settings.CloseBehavior == CloseBehavior.MinimizeToTray) _trayIcon.Show();
+        if (behavior == CloseBehavior.MinimizeToTray) _trayIcon.Show();
     }
-
-    private async void OriginalThemeItem_Click(object sender, RoutedEventArgs e) =>
-        await SetVisualThemeAsync(VisualTheme.Original);
-
-    private async void WhaleGirlThemeItem_Click(object sender, RoutedEventArgs e) =>
-        await SetVisualThemeAsync(VisualTheme.WhaleGirl);
 
     private async Task SetVisualThemeAsync(VisualTheme theme)
     {
         _themeService.Apply(theme);
         _settings = _settings with { VisualTheme = theme };
-        UpdateThemeMenuChecks();
         UpdateThemeArtwork();
         await _settingsStore.SaveAsync(_settings);
-    }
-
-    private void UpdateThemeMenuChecks()
-    {
-        OriginalThemeItem.IsChecked = _themeService.CurrentTheme == VisualTheme.Original;
-        WhaleGirlThemeItem.IsChecked = _themeService.CurrentTheme == VisualTheme.WhaleGirl;
     }
 
     private void RootGrid_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateThemeArtwork();
@@ -330,7 +312,7 @@ public sealed partial class MainWindow : Window
         WhaleGirlPortraitColumn.Width = new GridLength(0);
     }
 
-    private async void RestartHarness_Click(object sender, RoutedEventArgs e) => await RestartHarnessAsync();
+    private void RestartHarnessButton_Click(object sender, RoutedEventArgs e) => _ = RestartHarnessAsync();
 
     private async Task RestartHarnessAsync()
     {
@@ -347,15 +329,13 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private async void CheckUpdates_Click(object sender, RoutedEventArgs e) => await CheckForUpdatesAsync(manual: true);
-
     private async Task AutomaticUpdateCheckAsync()
     {
         await Task.Delay(TimeSpan.FromSeconds(10));
         await CheckForUpdatesAsync(manual: false);
     }
 
-    private async Task CheckForUpdatesAsync(bool manual)
+    private async Task<string> CheckForUpdatesAsync(bool manual)
     {
         if (manual)
         {
@@ -375,14 +355,14 @@ public sealed partial class MainWindow : Window
                 if (!manual)
                 {
                     UpdateInfoBar.IsOpen = false;
-                    return;
+                    return string.Empty;
                 }
 
                 UpdateInfoBar.Title = "Harness 已是最新版";
                 UpdateInfoBar.Message = $"当前版本 {_runtimeState.ActiveVersion}，无需更新。";
                 UpdateInfoBar.Severity = InfoBarSeverity.Informational;
                 ApplyUpdateButton.IsEnabled = false;
-                return;
+                return $"Harness 已是最新版（当前 {_runtimeState.ActiveVersion}）。";
             }
 
             _stagedRuntime = null;
@@ -392,6 +372,7 @@ public sealed partial class MainWindow : Window
             ApplyUpdateButton.Content = "更新";
             ApplyUpdateButton.IsEnabled = true;
             UpdateInfoBar.IsOpen = true;
+            return $"发现 Harness 更新 {_availableUpdate.AvailableVersion}，可在右下角提示中更新。";
         }
         catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
         {
@@ -403,6 +384,8 @@ public sealed partial class MainWindow : Window
                 UpdateInfoBar.Severity = InfoBarSeverity.Warning;
                 ApplyUpdateButton.IsEnabled = false;
             }
+
+            return "暂时无法检查更新：npm registry 当前不可用，现用 Harness 不受影响。";
         }
     }
 
@@ -460,13 +443,37 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private void OpenLogs_Click(object sender, RoutedEventArgs e)
+    private void OpenLogs_Click(object sender, RoutedEventArgs e) => OpenLogsFolder();
+
+    private void OpenLogsFolder()
     {
         Directory.CreateDirectory(_paths.LogsDirectory);
         Process.Start(new ProcessStartInfo { FileName = _paths.LogsDirectory, UseShellExecute = true });
     }
 
-    private async void About_Click(object sender, RoutedEventArgs e)
+    private async void SettingsButton_Click(object sender, RoutedEventArgs e) => await ShowSettingsAsync();
+
+    private async Task ShowSettingsAsync()
+    {
+        var dialog = new SettingsDialog(
+            new SettingsDialogState(
+                _settings.CloseBehavior,
+                _themeService.CurrentTheme,
+                GetShellVersion(),
+                _runtimeState.ActiveVersion),
+            new SettingsDialogCallbacks(
+                ApplyCloseBehaviorAsync,
+                SetVisualThemeAsync,
+                () => CheckForUpdatesAsync(manual: true),
+                OpenLogsFolder))
+        {
+            XamlRoot = RootGrid.XamlRoot
+        };
+        await dialog.ShowAsync();
+        if (dialog.AboutRequested) await ShowAboutDialogAsync();
+    }
+
+    private async Task ShowAboutDialogAsync()
     {
         var dialog = new ContentDialog
         {

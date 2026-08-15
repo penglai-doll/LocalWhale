@@ -35,36 +35,26 @@
                         FontSize="12"
                         Text="正在启动" />
                     <Button
-                        x:Name="MoreButton"
+                        x:Name="RestartHarnessButton"
                         Width="36"
                         Height="32"
                         VerticalAlignment="Center"
-                        ToolTipService.ToolTip="LocalWhale 菜单">
+                        Click="RestartHarnessButton_Click"
+                        ToolTipService.ToolTip="重启 Harness（配置更改后需要重启 Web 界面时使用）">
                         <Button.Content>
-                            <FontIcon Glyph="&#xE712;" />
+                            <FontIcon Glyph="&#xE72C;" />
                         </Button.Content>
-                        <Button.Flyout>
-                            <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                <ToggleMenuFlyoutItem x:Name="CloseToTrayItem" Text="关闭时最小化到托盘" Click="CloseToTrayItem_Click" />
-                                <MenuFlyoutSubItem Text="外观主题">
-                                    <MenuFlyoutSubItem.Icon><FontIcon Glyph="&#xE790;" /></MenuFlyoutSubItem.Icon>
-                                    <RadioMenuFlyoutItem x:Name="OriginalThemeItem" GroupName="VisualTheme" Text="默认主题" Click="OriginalThemeItem_Click" />
-                                    <RadioMenuFlyoutItem x:Name="WhaleGirlThemeItem" GroupName="VisualTheme" Text="鲸鱼娘主题" Click="WhaleGirlThemeItem_Click" />
-                                </MenuFlyoutSubItem>
-                                <MenuFlyoutSeparator />
-                                <MenuFlyoutItem Text="检查 Harness 更新" Click="CheckUpdates_Click">
-                                    <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE895;" /></MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="重启 Harness" Click="RestartHarness_Click">
-                                    <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE777;" /></MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="打开日志" Click="OpenLogs_Click">
-                                    <MenuFlyoutItem.Icon><FontIcon Glyph="&#xED25;" /></MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutSeparator />
-                                <MenuFlyoutItem Text="关于 LocalWhale" Click="About_Click" />
-                            </MenuFlyout>
-                        </Button.Flyout>
+                    </Button>
+                    <Button
+                        x:Name="SettingsButton"
+                        Width="36"
+                        Height="32"
+                        VerticalAlignment="Center"
+                        Click="SettingsButton_Click"
+                        ToolTipService.ToolTip="设置">
+                        <Button.Content>
+                            <FontIcon Glyph="&#xE713;" />
+                        </Button.Content>
                     </Button>
                 </StackPanel>
             </TitleBar.RightHeader>

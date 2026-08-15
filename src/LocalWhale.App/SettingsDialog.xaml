@@ -1,0 +1,156 @@
+<ContentDialog
+    x:Class="LocalWhale.App.SettingsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="设置"
+    CloseButtonText="关闭"
+    DefaultButton="Close">
+
+    <ContentDialog.Resources>
+        <Style x:Key="SettingsRowStyle" TargetType="Border">
+            <Setter Property="Background" Value="{ThemeResource ShellCardBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource ShellCardBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="14,12" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        <Style x:Key="SettingsSectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{ThemeResource ShellMutedForegroundBrush}" />
+            <Setter Property="Margin" Value="2,12,0,4" />
+        </Style>
+        <Style x:Key="SettingsRowTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="SettingsRowDescriptionStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{ThemeResource ShellMutedForegroundBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </ContentDialog.Resources>
+
+    <ScrollViewer MaxHeight="540">
+        <StackPanel Width="480" Spacing="4">
+
+            <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" Text="常规" />
+            <Border Style="{StaticResource SettingsRowStyle}">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Spacing="2">
+                        <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="关闭时最小化到托盘" />
+                        <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="关闭窗口时保留托盘图标并在后台继续运行；关闭后可从托盘完全退出。" />
+                    </StackPanel>
+                    <ToggleSwitch
+                        x:Name="CloseToTrayToggle"
+                        Grid.Column="1"
+                        MinWidth="0"
+                        OffContent=""
+                        OnContent=""
+                        Toggled="CloseToTrayToggle_Toggled" />
+                </Grid>
+            </Border>
+
+            <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" Text="外观" />
+            <Border Style="{StaticResource SettingsRowStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="外观主题" />
+                    <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="主题只影响 LocalWhale 自己的标题栏、启动卡片和设置界面；WebView2 中的官方 Harness 界面保持原样。" />
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <RadioButton
+                            x:Name="OriginalThemeRadio"
+                            Checked="ThemeRadio_Checked"
+                            Content="默认主题"
+                            GroupName="VisualTheme" />
+                        <RadioButton
+                            x:Name="WhaleGirlThemeRadio"
+                            Checked="ThemeRadio_Checked"
+                            Content="鲸鱼娘主题"
+                            GroupName="VisualTheme" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" Text="更新" />
+            <Border Style="{StaticResource SettingsRowStyle}">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Spacing="2">
+                        <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="Harness 更新" />
+                        <TextBlock
+                            x:Name="HarnessVersionText"
+                            Style="{StaticResource SettingsRowDescriptionStyle}"
+                            Text="当前 —" />
+                        <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="检查官方 npm registry；更新前会在临时目录完成安装验证与冒烟测试。" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Button
+                        x:Name="CheckHarnessUpdatesButton"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Click="CheckHarnessUpdatesButton_Click"
+                        Content="检查更新" />
+                </Grid>
+            </Border>
+            <TextBlock
+                x:Name="HarnessCheckStatusText"
+                Margin="2,0,0,0"
+                FontSize="12"
+                Foreground="{ThemeResource ShellMutedForegroundBrush}"
+                Text=""
+                TextWrapping="Wrap" />
+
+            <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" Text="诊断" />
+            <Border Style="{StaticResource SettingsRowStyle}">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Spacing="2">
+                        <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="日志" />
+                        <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="打开本地日志文件夹。日志经过脱敏，最多保留 14 天且不超过 50 MiB。" />
+                    </StackPanel>
+                    <Button
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Click="OpenLogsButton_Click"
+                        Content="打开日志" />
+                </Grid>
+            </Border>
+
+            <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" Text="关于" />
+            <Border Style="{StaticResource SettingsRowStyle}">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Spacing="2">
+                        <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="LocalWhale" />
+                        <TextBlock
+                            x:Name="ShellVersionText"
+                            Style="{StaticResource SettingsRowDescriptionStyle}"
+                            Text="Shell —" />
+                    </StackPanel>
+                    <Button
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Click="AboutButton_Click"
+                        Content="关于" />
+                </Grid>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>
