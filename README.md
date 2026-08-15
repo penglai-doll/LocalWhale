@@ -1,14 +1,42 @@
-# LocalWhale
+<p align="center">
+  <img src="src/LocalWhale.App/Assets/Brand/LocalWhaleMark.svg" width="104" alt="LocalWhale whale-tail mark">
+</p>
 
-[![Platform](https://img.shields.io/badge/platform-Windows%2011%20x64-0078D4?logo=windows11)](https://www.microsoft.com/windows/windows-11)
-[![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![Harness](https://img.shields.io/badge/DeepSeek%20Harness-0.1.0--rc.6-5B5BD6)](https://github.com/deepseek-ai/deepseek-harness)
-[![CI](https://github.com/penglai-doll/LocalWhale/actions/workflows/ci.yml/badge.svg)](https://github.com/penglai-doll/LocalWhale/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+<h1 align="center">LocalWhale</h1>
 
-**把官方 DeepSeek Harness WebUI 变成一个真正的 Windows 桌面应用。** 运行 `LocalWhale.exe`，应用会在后台隐藏启动随包携带的 Node/Harness 服务，健康检查通过后再显示官方页面。
+<p align="center">
+  <strong>用 WinUI 3 把 DeepSeek Harness 带到 Windows 桌面。</strong><br>
+  <strong>A native WinUI 3 desktop home for DeepSeek Harness.</strong>
+</p>
 
-**A native Windows desktop shell for the official DeepSeek Harness WebUI.** Launch `LocalWhale.exe`; it starts the bundled Node/Harness service in the background and opens the upstream UI after an authenticated health check succeeds.
+<p align="center">
+  <a href="https://github.com/penglai-doll/LocalWhale/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/penglai-doll/LocalWhale?display_name=tag&sort=semver"></a>
+  <a href="https://learn.microsoft.com/en-us/windows/apps/winui/winui3/"><img alt="WinUI 3" src="https://img.shields.io/badge/UI-WinUI%203-0078D4?logo=windows11"></a>
+  <a href="https://www.microsoft.com/windows/windows-11"><img alt="Windows 11 x64" src="https://img.shields.io/badge/platform-Windows%2011%20x64-0078D4?logo=windows11"></a>
+  <a href="https://dotnet.microsoft.com/"><img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet"></a>
+  <a href="https://github.com/deepseek-ai/deepseek-harness"><img alt="DeepSeek Harness 0.1.0-rc.6" src="https://img.shields.io/badge/DeepSeek%20Harness-0.1.0--rc.6-5B5BD6"></a>
+  <a href="https://github.com/topics/dsh-plugin"><img alt="dsh-plugin" src="https://img.shields.io/badge/topic-dsh--plugin-0969DA?logo=github"></a>
+  <a href="https://github.com/penglai-doll/LocalWhale/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/penglai-doll/LocalWhale/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-green.svg"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/penglai-doll/LocalWhale/releases/latest"><strong>下载最新版 / Download</strong></a>
+  · <a href="docs/releases/v0.1.1.md">v0.1.1 更新日志 / Release notes</a>
+  · <a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a>
+</p>
+
+LocalWhale 是一个基于 **.NET 10、WinUI 3 和 Windows App SDK** 的原生 Windows 11 桌面宿主。运行 `LocalWhale.exe` 后，它会隐藏启动随包携带的 Node/Harness 服务，通过带鉴权的健康检查确认就绪，再由 WebView2 显示未修改的官方 WebUI。
+
+LocalWhale is a native Windows 11 host built with **.NET 10, WinUI 3, and the Windows App SDK**. Launching `LocalWhale.exe` starts the bundled Node/Harness service invisibly, waits for an authenticated health check, and then presents the unchanged upstream WebUI in WebView2.
+
+| 特点 / Highlight | 实现 / What it means |
+|---|---|
+| **原生 WinUI 3 / Native WinUI 3** | Windows App SDK `TitleBar`、Mica、Fluent 控件、系统托盘、Snap 与高 DPI。 |
+| **官方插件机制 / Official plugin model** | desktop bridge 通过 Harness `--patch` 作为 Cordis 插件加载，遵循上游 “Everything is a Plugin” 架构。 |
+| **官方界面原样保留 / Upstream UI preserved** | 不注入 CSS、不套 iframe、不 fork Harness 前端；主题仅作用于 WinUI 宿主。 |
+| **离线即用 / Self-contained** | 安装包内置 Node、pnpm、Harness、.NET 运行文件和 WebView2 Evergreen 离线安装器。 |
+| **桌面级生命周期 / Desktop lifecycle** | 隐藏启动、单实例、随机本机端口、托盘、优雅关闭、Job Object 清场、更新验证与回滚。 |
 
 > LocalWhale 是独立的社区项目，与 DeepSeek 没有隶属或官方背书关系。DeepSeek Harness 页面及信息架构保持原样，不注入 CSS，不使用 iframe，也不 fork 官方前端。LocalWhale 图标与鲸鱼娘角色是本项目的原创社区视觉资产，不代表 DeepSeek 官方形象。
 
@@ -20,11 +48,12 @@
 
 ### 为什么做 LocalWhale
 
-官方 Harness 提供的是本地 WebUI，直接使用时通常需要自己管理 Node、包管理器、终端窗口、端口和服务退出。LocalWhale 把这些“启动器日常任务”收进一个轻量的 WinUI 3 外壳：
+官方 Harness 提供的是本地 WebUI，直接使用时通常需要自己管理 Node、包管理器、终端窗口、端口和服务退出。LocalWhale 把这些“启动器日常任务”收进一个原生 WinUI 3 外壳：
 
-- 双击 EXE 即用，不要求系统已安装 Node、pnpm 或 .NET Runtime。
+- **WinUI 3 原生桌面体验：** 使用 Windows App SDK `TitleBar`、Mica、Fluent 控件、系统窗口按钮、Snap 和高 DPI 命中区。
+- **双击 EXE 即用：** 不要求系统已安装 Node、pnpm 或 .NET Runtime。
+- **遵循官方插件架构：** desktop bridge 通过 `--patch` 作为 Cordis 插件加载；仓库按照官方建议使用 [`dsh-plugin`](https://github.com/topics/dsh-plugin) topic。
 - 后台服务不弹终端窗口；随机监听 `127.0.0.1` 端口，不暴露到局域网。
-- 原生 Windows 11 Fluent 标题栏、Mica 背景、系统窗口按钮和高 DPI 命中区。
 - EXE、任务栏、Alt+Tab、托盘和安装器统一使用简洁的 LocalWhale 鲸尾图标。
 - 默认保持克制的 Fluent 外观，也可以从标题栏菜单切换到鲸鱼娘主题。
 - WebView2 直接加载官方 Harness 页面，宿主不修改官方前端。
@@ -171,9 +200,10 @@ licenses/                 上游 MIT License 与第三方声明
 
 ### What LocalWhale provides
 
-LocalWhale packages the official DeepSeek Harness WebUI as a Windows 11 x64 desktop experience:
+LocalWhale packages the official DeepSeek Harness WebUI as a native Windows 11 x64 desktop experience:
 
-- native WinUI 3 shell with a Fluent title bar and Mica backdrop;
+- a native WinUI 3 and Windows App SDK shell with `TitleBar`, Mica, Fluent controls, Snap, tray integration, and high-DPI behavior;
+- a Cordis desktop bridge loaded through the official Harness `--patch` plugin mechanism; this repository follows the upstream recommendation to use the [`dsh-plugin`](https://github.com/topics/dsh-plugin) topic;
 - one simple LocalWhale mark across the executable, taskbar, Alt+Tab, tray, and installer;
 - an Original theme by default plus an optional WhaleGirl host theme;
 - WebView2 hosting without CSS injection, iframe wrapping, or upstream UI changes;
@@ -216,7 +246,7 @@ The installer is written to `artifacts\installer\LocalWhale-Setup-x64.exe`. See 
 
 ## Contributing
 
-Bug reports and focused pull requests are welcome. Please include a reproducible case and keep changes within the project's boundary: the desktop host may integrate with Harness through the documented patch/plugin mechanism, but it must not silently fork or restyle the official WebUI.
+Bug reports and focused pull requests are welcome. Please include a reproducible case and keep changes within the project's boundary: the WinUI desktop host may integrate with Harness through the documented patch/plugin mechanism, but it must not silently fork or restyle the official WebUI. In line with the [DeepSeek Harness community guidance](https://github.com/deepseek-ai/deepseek-harness#community-and-support), compatible integrations can use the `dsh-plugin` topic for discovery.
 
 Before submitting a change, run both the .NET and bridge test suites. Never commit API keys, `%USERPROFILE%\.dsh`, generated runtimes, WebView2 user data, logs, or installer artifacts.
 
