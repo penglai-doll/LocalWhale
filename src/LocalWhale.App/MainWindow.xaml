@@ -8,81 +8,67 @@
 
     <Grid x:Name="RootGrid" Loaded="RootGrid_Loaded">
         <Grid.RowDefinitions>
-            <RowDefinition Height="48" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid
+        <TitleBar
             x:Name="AppTitleBar"
             Grid.Row="0"
-            Height="48"
-            Padding="12,0,12,0"
-            Background="Transparent">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="18" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <Border Width="28" Height="28" CornerRadius="8" Background="{ThemeResource AccentFillColorDefaultBrush}">
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontFamily="Segoe UI Emoji"
-                    FontSize="16"
-                    Text="🐋" />
-            </Border>
-            <TextBlock
-                Grid.Column="1"
-                Margin="10,0,0,0"
-                VerticalAlignment="Center"
-                FontSize="14"
-                FontWeight="SemiBold"
-                Text="LocalWhale" />
-            <Ellipse
-                x:Name="StatusDot"
-                Grid.Column="3"
-                Width="8"
-                Height="8"
-                VerticalAlignment="Center"
-                Fill="{ThemeResource SystemFillColorCautionBrush}" />
-            <StackPanel Grid.Column="4" Margin="8,0,0,0" VerticalAlignment="Center">
-                <TextBlock x:Name="ConnectionText" FontSize="12" Text="正在启动 Harness" />
-                <TextBlock x:Name="VersionText" FontSize="10" Opacity="0.65" Text="Shell 0.1.0 · Harness —" />
-            </StackPanel>
-            <Button
-                x:Name="MoreButton"
-                Grid.Column="6"
-                Width="36"
-                Height="32"
-                VerticalAlignment="Center"
-                ToolTipService.ToolTip="LocalWhale 菜单">
-                <Button.Content>
-                    <FontIcon Glyph="&#xE712;" />
-                </Button.Content>
-                <Button.Flyout>
-                    <MenuFlyout Placement="BottomEdgeAlignedRight">
-                        <ToggleMenuFlyoutItem x:Name="CloseToTrayItem" Text="关闭时最小化到托盘" Click="CloseToTrayItem_Click" />
-                        <MenuFlyoutSeparator />
-                        <MenuFlyoutItem Text="检查 Harness 更新" Click="CheckUpdates_Click">
-                            <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE895;" /></MenuFlyoutItem.Icon>
-                        </MenuFlyoutItem>
-                        <MenuFlyoutItem Text="重启 Harness" Click="RestartHarness_Click">
-                            <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE777;" /></MenuFlyoutItem.Icon>
-                        </MenuFlyoutItem>
-                        <MenuFlyoutItem Text="打开日志" Click="OpenLogs_Click">
-                            <MenuFlyoutItem.Icon><FontIcon Glyph="&#xED25;" /></MenuFlyoutItem.Icon>
-                        </MenuFlyoutItem>
-                        <MenuFlyoutSeparator />
-                        <MenuFlyoutItem Text="关于 LocalWhale" Click="About_Click" />
-                    </MenuFlyout>
-                </Button.Flyout>
-            </Button>
-        </Grid>
+            Background="{ThemeResource ShellTitleBarBackgroundBrush}"
+            Subtitle="LocalWhale 0.1.0 · Harness —"
+            Title="LocalWhale">
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="ms-appx:///Assets/Brand/LocalWhaleMark-24.png" />
+            </TitleBar.IconSource>
+            <TitleBar.RightHeader>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Ellipse
+                        x:Name="StatusDot"
+                        Width="8"
+                        Height="8"
+                        VerticalAlignment="Center"
+                        Fill="{ThemeResource SystemFillColorCautionBrush}" />
+                    <TextBlock
+                        x:Name="ConnectionText"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Text="正在启动" />
+                    <Button
+                        x:Name="MoreButton"
+                        Width="36"
+                        Height="32"
+                        VerticalAlignment="Center"
+                        ToolTipService.ToolTip="LocalWhale 菜单">
+                        <Button.Content>
+                            <FontIcon Glyph="&#xE712;" />
+                        </Button.Content>
+                        <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                <ToggleMenuFlyoutItem x:Name="CloseToTrayItem" Text="关闭时最小化到托盘" Click="CloseToTrayItem_Click" />
+                                <MenuFlyoutSubItem Text="外观主题">
+                                    <MenuFlyoutSubItem.Icon><FontIcon Glyph="&#xE790;" /></MenuFlyoutSubItem.Icon>
+                                    <RadioMenuFlyoutItem x:Name="OriginalThemeItem" GroupName="VisualTheme" Text="默认主题" Click="OriginalThemeItem_Click" />
+                                    <RadioMenuFlyoutItem x:Name="WhaleGirlThemeItem" GroupName="VisualTheme" Text="鲸鱼娘主题" Click="WhaleGirlThemeItem_Click" />
+                                </MenuFlyoutSubItem>
+                                <MenuFlyoutSeparator />
+                                <MenuFlyoutItem Text="检查 Harness 更新" Click="CheckUpdates_Click">
+                                    <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE895;" /></MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Text="重启 Harness" Click="RestartHarness_Click">
+                                    <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE777;" /></MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Text="打开日志" Click="OpenLogs_Click">
+                                    <MenuFlyoutItem.Icon><FontIcon Glyph="&#xED25;" /></MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutSeparator />
+                                <MenuFlyoutItem Text="关于 LocalWhale" Click="About_Click" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+            </TitleBar.RightHeader>
+        </TitleBar>
 
         <WebView2
             x:Name="HarnessWebView"

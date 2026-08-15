@@ -27,6 +27,7 @@ public sealed partial class MainWindow : Window
     private readonly HarnessRuntimeManager _runtimeManager;
     private readonly HttpClient _updateHttpClient = new() { Timeout = TimeSpan.FromSeconds(15) };
     private readonly HarnessUpdateService _updateService;
+    private readonly ShellThemeService _themeService;
     private readonly AppWindow _appWindow;
     private readonly NativeTrayIcon _trayIcon;
     private AppSettings _settings = AppSettings.Default;
@@ -44,6 +45,7 @@ public sealed partial class MainWindow : Window
         RestartHarnessCommand = new RelayCommand(() => _ = RestartHarnessAsync());
         ExitCommand = new RelayCommand(() => _ = ExitAsync());
         InitializeComponent();
+        _themeService = new ShellThemeService();
 
         _logger = new FileLogger(_paths.LogsDirectory);
         _settingsStore = new AppSettingsStore(_paths.SettingsFile);
@@ -76,26 +78,16 @@ public sealed partial class MainWindow : Window
         _appWindow.Resize(new SizeInt32(1240, 800));
         _appWindow.SetPresenter(AppWindowPresenterKind.Default);
         _appWindow.Closing += AppWindow_Closing;
-        _appWindow.Changed += AppWindow_Changed;
         if (AppWindowTitleBar.IsCustomizationSupported())
         {
             _appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
             _appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-            UpdateTitleBarInsets();
         }
     }
 
     public ICommand ShowWindowCommand { get; }
     public ICommand RestartHarnessCommand { get; }
     public ICommand ExitCommand { get; }
-
-    private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args) => UpdateTitleBarInsets();
-
-    private void UpdateTitleBarInsets()
-    {
-        if (!AppWindowTitleBar.IsCustomizationSupported()) return;
-        AppTitleBar.Padding = new Thickness(12, 0, _appWindow.TitleBar.RightInset + 8, 0);
-    }
 
     public void ShowAndActivate()
     {
@@ -120,6 +112,8 @@ public sealed partial class MainWindow : Window
         _loaded = true;
         _settings = await _settingsStore.LoadAsync();
         CloseToTrayItem.IsChecked = _settings.CloseBehavior == CloseBehavior.MinimizeToTray;
+        _themeService.Apply(_settings.VisualTheme);
+        UpdateThemeMenuChecks();
         await StartHarnessAsync();
     }
 
@@ -147,8 +141,8 @@ public sealed partial class MainWindow : Window
                 _logger.Write,
                 CancellationToken.None);
             _ = MarkRuntimeStableAsync(runtime, _stableRuntimeCancellation.Token);
-            ConnectionText.Text = "Harness 已连接";
-            VersionText.Text = $"Shell {GetShellVersion()} · Harness {runtime.Version}";
+            ConnectionText.Text = "已连接";
+            AppTitleBar.Subtitle = $"LocalWhale {GetShellVersion()} · Harness {runtime.Version}";
             StatusDot.Fill = new SolidColorBrush(Colors.LimeGreen);
 
             var environment = await CoreWebView2Environment.CreateWithOptionsAsync(null, _paths.WebView2Directory, null);
@@ -271,6 +265,26 @@ public sealed partial class MainWindow : Window
         };
         await _settingsStore.SaveAsync(_settings);
         if (_settings.CloseBehavior == CloseBehavior.MinimizeToTray) _trayIcon.Show();
+    }
+
+    private async void OriginalThemeItem_Click(object sender, RoutedEventArgs e) =>
+        await SetVisualThemeAsync(VisualTheme.Original);
+
+    private async void WhaleGirlThemeItem_Click(object sender, RoutedEventArgs e) =>
+        await SetVisualThemeAsync(VisualTheme.WhaleGirl);
+
+    private async Task SetVisualThemeAsync(VisualTheme theme)
+    {
+        _themeService.Apply(theme);
+        _settings = _settings with { VisualTheme = theme };
+        UpdateThemeMenuChecks();
+        await _settingsStore.SaveAsync(_settings);
+    }
+
+    private void UpdateThemeMenuChecks()
+    {
+        OriginalThemeItem.IsChecked = _themeService.CurrentTheme == VisualTheme.Original;
+        WhaleGirlThemeItem.IsChecked = _themeService.CurrentTheme == VisualTheme.WhaleGirl;
     }
 
     private async void RestartHarness_Click(object sender, RoutedEventArgs e) => await RestartHarnessAsync();
@@ -459,7 +473,7 @@ public sealed partial class MainWindow : Window
         StartupProgress.IsActive = true;
         RecoveryActions.Visibility = Visibility.Collapsed;
         StartupOverlay.Visibility = Visibility.Visible;
-        ConnectionText.Text = "正在连接 Harness";
+        ConnectionText.Text = "正在启动";
         StatusDot.Fill = new SolidColorBrush(Colors.Goldenrod);
     }
 
@@ -470,7 +484,7 @@ public sealed partial class MainWindow : Window
         StartupProgress.IsActive = false;
         RecoveryActions.Visibility = Visibility.Visible;
         StartupOverlay.Visibility = Visibility.Visible;
-        ConnectionText.Text = "Harness 未连接";
+        ConnectionText.Text = "启动失败";
         StatusDot.Fill = new SolidColorBrush(Colors.IndianRed);
     }
 

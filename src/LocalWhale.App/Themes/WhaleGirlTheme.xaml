@@ -1,0 +1,36 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="ShellTitleBarBackgroundBrush" Color="#66EAF3FF" />
+            <SolidColorBrush x:Key="ShellOverlayBackgroundBrush" Color="#EEF4FF" />
+            <SolidColorBrush x:Key="ShellCardBackgroundBrush" Color="#F7FAFF" />
+            <SolidColorBrush x:Key="ShellCardBorderBrush" Color="#335F8FE6" />
+            <SolidColorBrush x:Key="ShellAccentBrush" Color="#425BB5" />
+            <SolidColorBrush x:Key="ShellAccentForegroundBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ShellMutedForegroundBrush" Color="#52627E" />
+            <x:Double x:Key="WhaleGirlDecorationOpacity">0.22</x:Double>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="ShellTitleBarBackgroundBrush" Color="#66152249" />
+            <SolidColorBrush x:Key="ShellOverlayBackgroundBrush" Color="#171C35" />
+            <SolidColorBrush x:Key="ShellCardBackgroundBrush" Color="#20284A" />
+            <SolidColorBrush x:Key="ShellCardBorderBrush" Color="#665F8FE6" />
+            <SolidColorBrush x:Key="ShellAccentBrush" Color="#8ACBFF" />
+            <SolidColorBrush x:Key="ShellAccentForegroundBrush" Color="#10162D" />
+            <SolidColorBrush x:Key="ShellMutedForegroundBrush" Color="#B8C6E5" />
+            <x:Double x:Key="WhaleGirlDecorationOpacity">0.18</x:Double>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="ShellTitleBarBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="ShellOverlayBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="ShellCardBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="ShellCardBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="ShellAccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ShellAccentForegroundBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="ShellMutedForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <x:Double x:Key="WhaleGirlDecorationOpacity">0</x:Double>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>
