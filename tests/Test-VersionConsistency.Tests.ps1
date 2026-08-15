@@ -16,19 +16,19 @@ function Assert-TextMatch {
         [Parameter(Mandatory)][string]$Description
     )
 
-    $text = Get-Content -Raw -LiteralPath $Path
+    $text = Get-Content -Raw -Encoding UTF8 -LiteralPath $Path
     if ($text -notmatch $Pattern) {
         throw "$Description is inconsistent in $Path"
     }
 }
 
-[xml]$project = Get-Content -Raw -LiteralPath $appProjectPath
+[xml]$project = Get-Content -Raw -Encoding UTF8 -LiteralPath $appProjectPath
 $expectedProjectValues = @{
-    ApplicationDisplayVersion = '0.1.1'
-    ApplicationVersion = '2'
-    Version = '0.1.1'
-    AssemblyVersion = '0.1.1.0'
-    FileVersion = '0.1.1.0'
+    ApplicationDisplayVersion = '0.1.2'
+    ApplicationVersion = '3'
+    Version = '0.1.2'
+    AssemblyVersion = '0.1.2.0'
+    FileVersion = '0.1.2.0'
 }
 
 foreach ($property in $expectedProjectValues.Keys) {
@@ -38,13 +38,13 @@ foreach ($property in $expectedProjectValues.Keys) {
     }
 }
 
-Assert-TextMatch -Path $installerPath -Pattern '(?m)^#define MyAppVersion "0\.1\.1"$' -Description 'Installer product version'
-Assert-TextMatch -Path $windowCodePath -Pattern '\?\? "0\.1\.1";' -Description 'Shell version fallback'
-Assert-TextMatch -Path $windowXamlPath -Pattern 'Subtitle="LocalWhale 0\.1\.1 · Harness —"' -Description 'Initial title-bar version'
-Assert-TextMatch -Path $readmePath -Pattern '\|\s*LocalWhale\s*\|\s*0\.1\.1\s*\|' -Description 'README LocalWhale version table'
+Assert-TextMatch -Path $installerPath -Pattern '(?m)^#define MyAppVersion "0\.1\.2"\r?$' -Description 'Installer product version'
+Assert-TextMatch -Path $windowCodePath -Pattern '\?\? "0\.1\.2";' -Description 'Shell version fallback'
+Assert-TextMatch -Path $windowXamlPath -Pattern 'Subtitle="LocalWhale 0\.1\.2 \u00B7 Harness \u2014"' -Description 'Initial title-bar version'
+Assert-TextMatch -Path $readmePath -Pattern '\|\s*LocalWhale\s*\|\s*0\.1\.2\s*\|' -Description 'README LocalWhale version table'
 
 foreach ($path in @($readmePath, (Join-Path $projectRoot 'src\LocalWhale.Core\Persistence\LocalWhalePaths.cs'))) {
     Assert-TextMatch -Path $path -Pattern '0\.1\.0-rc\.6' -Description 'Pinned Harness version'
 }
 
-Write-Host 'Version consistency passed: LocalWhale 0.1.1 and Harness 0.1.0-rc.6.'
+Write-Host 'Version consistency passed: LocalWhale 0.1.2 and Harness 0.1.0-rc.6.'

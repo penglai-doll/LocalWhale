@@ -16,7 +16,7 @@
             x:Name="AppTitleBar"
             Grid.Row="0"
             Background="{ThemeResource ShellTitleBarBackgroundBrush}"
-            Subtitle="LocalWhale 0.1.1 · Harness —"
+            Subtitle="LocalWhale 0.1.2 · Harness —"
             Title="LocalWhale">
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="ms-appx:///Assets/Brand/LocalWhaleMark-24.png" />

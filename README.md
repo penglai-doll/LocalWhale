@@ -22,7 +22,7 @@
 
 <p align="center">
   <a href="https://github.com/penglai-doll/LocalWhale/releases/latest"><strong>下载最新版 / Download</strong></a>
-  · <a href="docs/releases/v0.1.1.md">v0.1.1 更新日志 / Release notes</a>
+  · <a href="docs/releases/v0.1.2.md">v0.1.2 更新日志 / Release notes</a>
   · <a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a>
 </p>
 
@@ -37,6 +37,8 @@ LocalWhale is a native Windows 11 host built with **.NET 10, WinUI 3, and the Wi
 | **官方界面原样保留 / Upstream UI preserved** | 不注入 CSS、不套 iframe、不 fork Harness 前端；主题仅作用于 WinUI 宿主。 |
 | **离线即用 / Self-contained** | 安装包内置 Node、pnpm、Harness、.NET 运行文件和 WebView2 Evergreen 离线安装器。 |
 | **桌面级生命周期 / Desktop lifecycle** | 隐藏启动、单实例、随机本机端口、托盘、优雅关闭、Job Object 清场、更新验证与回滚。 |
+| **外壳自更新 / Shell self-update** | 检查 GitHub 最新发布，点击下载并逐字节校验 SHA-256；下次重启静默安装并自动回到新版。 |
+| **独立重启与设置 / Restart & settings** | 标题栏独立的 Harness 重启按钮与设置对话框；关闭到托盘、主题、更新检查与日志收纳于设置。 |
 
 > LocalWhale 是独立的社区项目，与 DeepSeek 没有隶属或官方背书关系。DeepSeek Harness 页面及信息架构保持原样，不注入 CSS，不使用 iframe，也不 fork 官方前端。LocalWhale 图标与鲸鱼娘角色是本项目的原创社区视觉资产，不代表 DeepSeek 官方形象。
 
@@ -77,7 +79,7 @@ LocalWhale is a native Windows 11 host built with **.NET 10, WinUI 3, and the Wi
 
 v0.1.1 使用 Windows App SDK 的原生 `TitleBar`、Mica、Fluent 卡片和 `InfoBar` 重新整理了桌面宿主。默认的“默认主题”跟随 Windows 浅色、深色与高对比度设置；“鲸鱼娘主题”使用海军蓝、长春花蓝与冰青配色，并只在启动、恢复与关于界面显示本项目原创角色。窗口窄于 760 逻辑像素或系统处于高对比度模式时，角色装饰会自动隐藏，让文字和操作按钮保持清晰。
 
-主题只影响 LocalWhale 自己的标题栏、启动/恢复卡片、更新提示和关于对话框。WebView2 中的官方 Harness DOM、CSS、页面结构及插件界面完全不变。可在右上角 `…` →“外观主题”即时切换；选择会写入 `%LOCALAPPDATA%\LocalWhale\settings.json`，重启后继续使用。
+主题只影响 LocalWhale 自己的标题栏、启动/恢复卡片、更新提示和设置界面。WebView2 中的官方 Harness DOM、CSS、页面结构及插件界面完全不变。可在右上角设置按钮（齿轮）打开设置对话框，在“外观”中即时切换；选择会写入 `%LOCALAPPDATA%\LocalWhale\settings.json`，重启后继续使用。
 
 从 v0.1.0 覆盖安装时，旧设置文件没有主题字段也能直接读取，并默认选择“默认主题”；关闭行为、忽略的 Harness 版本与上次更新检查时间都会保留。此迁移不会读取、移动或重写 `%USERPROFILE%\.dsh`。
 
@@ -109,23 +111,26 @@ bridge 只增加两个本机宿主端点：
 | LocalWhale 设置与运行状态 | `%LOCALAPPDATA%\LocalWhale` | 删除 |
 | WebView2 用户数据 | `%LOCALAPPDATA%\LocalWhale\webview2` | 删除 |
 | Harness 版本与更新 staging | `%LOCALAPPDATA%\LocalWhale\runtimes` | 删除 |
+| 外壳更新安装包暂存 | `%LOCALAPPDATA%\LocalWhale\updates` | 删除 |
 | 脱敏日志 | `%LOCALAPPDATA%\LocalWhale\logs` | 删除 |
 
 LocalWhale 不读取、复制或迁移 Harness API Key。日志会脱敏 token、密钥形式的参数和敏感环境变量，并保留最多 14 天、总量不超过 50 MiB。
 
 ### Harness 更新保护
 
-应用成功启动后会检查官方 npm registry，自动检查最多每 24 小时一次，也可以从标题栏菜单手动检查。发现新版后可更新、稍后或忽略该版本。
+应用成功启动后会检查官方 npm registry，自动检查最多每 24 小时一次，也可以从设置对话框手动检查。发现新版后可更新、稍后或忽略该版本。
 
 候选版本不会直接覆盖当前版本。更新器会在临时目录中生成锁文件、验证 registry integrity、预取并离线安装，然后使用临时 `DSH_HOME` 和 WebView2 数据目录执行 bridge、首页加载、前端启动错误与优雅关闭冒烟测试。未知生命周期脚本会使候选版被拒绝；验证失败时当前会话和当前已知良好版本保持不变。新版连续启动失败时运行状态策略会回滚到上一版本。
 
-桌面外壳本身不进行应用内自更新；新版本通过重新运行 Setup 覆盖安装。
+### 外壳更新（v0.1.2 起）
+
+LocalWhale 自身的更新独立于 Harness。设置中可开关“自动检查外壳更新”，默认开启且最多每 24 小时查询一次 GitHub 最新发布，也可在设置里立即检查。发现新版本时会弹出右下角系统通知与应用内更新卡片；点击“下载更新”后，LocalWhale 会下载新版安装包并逐字节校验 SHA-256（与 Release 的 `SHA256SUMS.txt` 比对），校验通过后暂存到 `%LOCALAPPDATA%\LocalWhale\updates`。此后任意一次重启 LocalWhale，都会在进入界面前再次校验暂存包并静默完成覆盖安装，随后自动回到新版；暂存损坏或安装失败会自动清理并照常启动，不影响当前版本。也可以忽略指定版本或选择稍后。
 
 ### 常见问题
 
 #### 显示“Harness 启动失败”
 
-先在右上角 `…` 菜单选择“打开日志”。v0.1.0 已修复官方 Harness 首次创建 profile 链接时可能出现的 `ERR_MODULE_NOT_FOUND`：只在错误来源确实位于当前 `DSH_HOME\profiles` 时自动启动第二次，端口占用和其他启动错误不会被误判重试。
+先打开右上角设置按钮（齿轮），在“诊断”中选择“打开日志”。v0.1.0 已修复官方 Harness 首次创建 profile 链接时可能出现的 `ERR_MODULE_NOT_FOUND`：只在错误来源确实位于当前 `DSH_HOME\profiles` 时自动启动第二次，端口占用和其他启动错误不会被误判重试。
 
 如仍失败，请在 Issue 中附上：
 
@@ -184,7 +189,7 @@ licenses/                 上游 MIT License 与第三方声明
 
 | 组件 | 版本 |
 |---|---:|
-| LocalWhale | 0.1.1 |
+| LocalWhale | 0.1.2 |
 | DeepSeek Harness | 0.1.0-rc.6 |
 | Node.js | 24.18.1 |
 | pnpm | 11.7.0 |
@@ -213,7 +218,9 @@ LocalWhale packages the official DeepSeek Harness WebUI as a native Windows 11 x
 - graceful shutdown followed by Job Object process-tree cleanup;
 - single-instance activation, optional tray behavior, redacted rotating logs;
 - isolated validation and rollback protection for Harness updates;
-- one bounded retry for the upstream first-profile module-link race.
+- one bounded retry for the upstream first-profile module-link race;
+- a dedicated Harness restart button plus a native settings dialog for close-to-tray, themes, update checks, and logs;
+- shell self-update: GitHub release checks (24h, toggleable), click-to-download with byte-level SHA-256 verification, and a silent reinstall on the next launch that relaunches the updated shell.
 
 ### Install
 
@@ -223,7 +230,7 @@ The initial personal release is unsigned. Download only from this repository and
 
 ### Appearance and v0.1.0 upgrades
 
-Version 0.1.1 adopts the Windows App SDK `TitleBar`, Fluent startup/recovery cards, and a native `InfoBar` for Harness updates. Original remains the default and follows Windows light, dark, and high-contrast modes. WhaleGirl is opt-in from `…` → **Appearance theme** and adds the project's original, AI-assisted community character only to host-owned startup, recovery, and About surfaces. The artwork collapses in narrow windows and is disabled in high contrast.
+Version 0.1.1 adopts the Windows App SDK `TitleBar`, Fluent startup/recovery cards, and a native `InfoBar` for Harness updates. Original remains the default and follows Windows light, dark, and high-contrast modes. WhaleGirl is opt-in from the settings dialog (gear button in the title bar) under **Appearance** and adds the project's original, AI-assisted community character only to host-owned startup, recovery, and About surfaces. The artwork collapses in narrow windows and is disabled in high contrast.
 
 Neither theme injects styles or scripts into WebView2. The upstream Harness DOM, CSS, information architecture, and client plugins remain unchanged. A v0.1.0 `settings.json` without a theme field migrates to Original while preserving close behavior, ignored Harness versions, and the last update-check time. Official data and credentials in `%USERPROFILE%\.dsh` are never read, moved, or rewritten by this migration.
 

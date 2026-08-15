@@ -1,5 +1,5 @@
 #define MyAppName "LocalWhale"
-#define MyAppVersion "0.1.1"
+#define MyAppVersion "0.1.2"
 #define MyAppPublisher "LocalWhale"
 #define MyAppExeName "LocalWhale.exe"
 

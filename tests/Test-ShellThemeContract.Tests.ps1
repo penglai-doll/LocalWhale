@@ -21,7 +21,7 @@ foreach ($themeName in @('OriginalTheme', 'WhaleGirlTheme')) {
         throw "Shell theme dictionary is missing: $themePath"
     }
 
-    [xml]$theme = Get-Content -Raw -LiteralPath $themePath
+    [xml]$theme = Get-Content -Raw -Encoding UTF8 -LiteralPath $themePath
     foreach ($variant in @('Light', 'Dark', 'HighContrast')) {
         $variantNode = $theme.SelectSingleNode("//*[local-name()='ResourceDictionary' and @*[local-name()='Key']='$variant']")
         if ($null -eq $variantNode) {
@@ -40,17 +40,18 @@ foreach ($themeName in @('OriginalTheme', 'WhaleGirlTheme')) {
     }
 }
 
-[xml]$application = Get-Content -Raw -LiteralPath (Join-Path $appRoot 'App.xaml')
+[xml]$application = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $appRoot 'App.xaml')
 $originalMerge = $application.SelectSingleNode("//*[local-name()='ResourceDictionary' and @Source='Themes/OriginalTheme.xaml']")
 if ($null -eq $originalMerge) {
     throw 'App.xaml does not load OriginalTheme.xaml by default.'
 }
 
-[xml]$window = Get-Content -Raw -LiteralPath (Join-Path $appRoot 'MainWindow.xaml')
+[xml]$window = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $appRoot 'MainWindow.xaml')
 if ($null -eq $window.SelectSingleNode("//*[local-name()='TitleBar' and @*[local-name()='Name']='AppTitleBar']")) {
     throw 'MainWindow.xaml does not use the WinUI TitleBar control.'
 }
-if ((Get-Content -Raw -LiteralPath (Join-Path $appRoot 'MainWindow.xaml')).Contains('🐋')) {
+$whaleEmoji = [char]::ConvertFromUtf32(0x1F433)
+if ((Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $appRoot 'MainWindow.xaml')).Contains($whaleEmoji)) {
     throw 'MainWindow.xaml still contains the generic whale emoji.'
 }
 
