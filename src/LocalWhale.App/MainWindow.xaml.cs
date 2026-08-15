@@ -148,9 +148,7 @@ public sealed partial class MainWindow : Window
                 _logger.Write,
                 CancellationToken.None);
             _ = MarkRuntimeStableAsync(runtime, _stableRuntimeCancellation.Token);
-            ConnectionText.Text = "已连接";
-            AppTitleBar.Subtitle = $"LocalWhale {GetShellVersion()} · Harness {runtime.Version}";
-            StatusDot.Fill = new SolidColorBrush(Colors.LimeGreen);
+            SetConnectedState(runtime);
 
             var environment = await CoreWebView2Environment.CreateWithOptionsAsync(null, _paths.WebView2Directory, null);
             await HarnessWebView.EnsureCoreWebView2Async(environment);
@@ -340,6 +338,7 @@ public sealed partial class MainWindow : Window
         try
         {
             var runtime = await _runtimeManager.RestartAsync(CancellationToken.None);
+            SetConnectedState(runtime);
             HarnessWebView.Source = runtime.BaseUri;
         }
         catch (Exception exception)
@@ -591,6 +590,13 @@ public sealed partial class MainWindow : Window
         StartupOverlay.Visibility = Visibility.Visible;
         ConnectionText.Text = "正在启动";
         StatusDot.Fill = new SolidColorBrush(Colors.Goldenrod);
+    }
+
+    private void SetConnectedState(HarnessRuntimeInfo runtime)
+    {
+        ConnectionText.Text = "已连接";
+        AppTitleBar.Subtitle = $"LocalWhale {GetShellVersion()} · Harness {runtime.Version}";
+        StatusDot.Fill = new SolidColorBrush(Colors.LimeGreen);
     }
 
     private void SetRecoveryState(string title, string detail)
