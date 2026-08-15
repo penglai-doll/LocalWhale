@@ -14,6 +14,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Web.WebView2.Core;
+using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 using Windows.Graphics;
 using Windows.UI.ViewManagement;
 using WinRT.Interop;
@@ -29,6 +31,7 @@ public sealed partial class MainWindow : Window
     private readonly HarnessRuntimeManager _runtimeManager;
     private readonly HttpClient _updateHttpClient = new() { Timeout = TimeSpan.FromSeconds(15) };
     private readonly HarnessUpdateService _updateService;
+    private readonly ShellUpdateService _shellUpdateService;
     private readonly ShellThemeService _themeService;
     private readonly AppWindow _appWindow;
     private readonly NativeTrayIcon _trayIcon;
@@ -39,6 +42,11 @@ public sealed partial class MainWindow : Window
     private bool _automaticUpdateCheckStarted;
     private HarnessUpdate? _availableUpdate;
     private StagedRuntime? _stagedRuntime;
+    private ShellUpdate? _availableShellUpdate;
+    private StagedShellUpdate? _stagedShellUpdate;
+    private bool _automaticShellUpdateCheckStarted;
+    private bool _shellUpdateDownloadRunning;
+    private bool _toastUnavailable;
     private CancellationTokenSource? _stableRuntimeCancellation;
     private BitmapImage? _whaleGirlPortraitSource;
 
@@ -63,6 +71,13 @@ public sealed partial class MainWindow : Window
             new PnpmRuntimeInstaller(_paths, _logger, ValidateCandidateInWebViewAsync),
             _settingsStore,
             _runtimeStateStore);
+        _shellUpdateService = new ShellUpdateService(
+            new GitHubReleaseClient(_updateHttpClient),
+            _updateHttpClient,
+            _settingsStore,
+            GetShellVersion(),
+            _paths.UpdatesDirectory);
+        TryRegisterToastNotifier();
 
         Title = "LocalWhale";
         ExtendsContentIntoTitleBar = true;
@@ -249,6 +264,12 @@ public sealed partial class MainWindow : Window
         {
             _automaticUpdateCheckStarted = true;
             _ = AutomaticUpdateCheckAsync();
+        }
+
+        if (!_automaticShellUpdateCheckStarted)
+        {
+            _automaticShellUpdateCheckStarted = true;
+            _ = AutomaticShellUpdateCheckAsync();
         }
     }
 
@@ -443,6 +464,168 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private void TryRegisterToastNotifier()
+    {
+        try
+        {
+            AppNotificationManager.Default.Register();
+        }
+        catch (Exception exception)
+        {
+            _toastUnavailable = true;
+            _logger.Write($"Toast notifications unavailable: {exception.Message}");
+        }
+    }
+
+    private void TryShowShellUpdateToast()
+    {
+        if (_toastUnavailable || _availableShellUpdate is null) return;
+        try
+        {
+            var notification = new AppNotificationBuilder()
+                .AddText("LocalWhale 外壳有新版本")
+                .AddText($"v{_availableShellUpdate.AvailableVersion} 已发布；下载校验完成后，重启 LocalWhale 即自动安装。")
+                .BuildNotification();
+            AppNotificationManager.Default.Show(notification);
+        }
+        catch (Exception exception)
+        {
+            _toastUnavailable = true;
+            _logger.Write($"Shell update toast could not be shown: {exception.Message}");
+        }
+    }
+
+    private async Task AutomaticShellUpdateCheckAsync()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(5));
+        await CheckForShellUpdatesAsync(manual: false);
+    }
+
+    private async Task<string> CheckForShellUpdatesAsync(bool manual)
+    {
+        try
+        {
+            if (_stagedShellUpdate is not null)
+            {
+                return $"外壳更新已就绪（v{_stagedShellUpdate.Version}）：重启 LocalWhale 后自动安装。";
+            }
+
+            _availableShellUpdate = await _shellUpdateService.CheckAsync(manual, CancellationToken.None);
+            _settings = await _settingsStore.LoadAsync();
+            if (_availableShellUpdate is null)
+            {
+                return manual ? $"外壳已是最新版（当前 {GetShellVersion()}）。" : string.Empty;
+            }
+
+            ShowShellUpdateDiscovered();
+            TryShowShellUpdateToast();
+            return $"发现外壳更新 v{_availableShellUpdate.AvailableVersion}，可在右下角提示中下载。";
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or InvalidDataException or System.Text.Json.JsonException)
+        {
+            _logger.Write($"Shell update check unavailable: {exception.Message}");
+            return manual ? "暂时无法检查外壳更新：GitHub 当前不可访问，现用版本不受影响。" : string.Empty;
+        }
+    }
+
+    private void ShowShellUpdateDiscovered()
+    {
+        ShellUpdateCard.Severity = InfoBarSeverity.Informational;
+        ShellUpdateCard.Title = $"发现外壳新版本 v{_availableShellUpdate!.AvailableVersion}";
+        ShellUpdateCard.Message = $"当前 {GetShellVersion()}；下载并完成 SHA-256 校验后，重启 LocalWhale 即自动安装。";
+        ShellUpdateActionButton.Content = "下载更新";
+        ShellUpdateActionButton.IsEnabled = true;
+        IgnoreShellUpdateButton.Visibility = Visibility.Visible;
+        ShellUpdateProgress.Value = 0;
+        ShellUpdateProgress.Visibility = Visibility.Collapsed;
+        ShellUpdateCard.IsOpen = true;
+    }
+
+    private async Task ApplyShellUpdateCheckEnabledAsync(bool enabled)
+    {
+        _settings = _settings with { ShellUpdateCheckEnabled = enabled };
+        await _settingsStore.SaveAsync(_settings);
+    }
+
+    private async void ShellUpdateActionButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_stagedShellUpdate is not null)
+        {
+            ShellUpdateCard.IsOpen = false;
+            await ExitAsync();
+            return;
+        }
+
+        if (_availableShellUpdate is null || _shellUpdateDownloadRunning) return;
+        _shellUpdateDownloadRunning = true;
+        ShellUpdateActionButton.IsEnabled = false;
+        ShellUpdateActionButton.Content = "正在下载…";
+        ShellUpdateCard.Severity = InfoBarSeverity.Informational;
+        ShellUpdateCard.Title = "正在下载外壳更新";
+        ShellUpdateCard.Message = $"v{_availableShellUpdate.AvailableVersion} · 正在校验下载源…";
+        ShellUpdateProgress.Value = 0;
+        ShellUpdateProgress.Visibility = Visibility.Visible;
+        var progress = new Progress<double>(percent =>
+        {
+            ShellUpdateProgress.Value = percent;
+            ShellUpdateCard.Message = $"v{_availableShellUpdate?.AvailableVersion} · {percent:F0}%（下载后自动校验 SHA-256）";
+        });
+        try
+        {
+            _stagedShellUpdate = await _shellUpdateService.DownloadAndStageAsync(_availableShellUpdate, progress, CancellationToken.None);
+            ShellUpdateCard.Severity = InfoBarSeverity.Success;
+            ShellUpdateCard.Title = "外壳更新已就绪";
+            ShellUpdateCard.Message = $"v{_stagedShellUpdate.Version} 已通过 SHA-256 校验；重启 LocalWhale 后自动安装并回到新版本。";
+            ShellUpdateActionButton.Content = "立即重启";
+            ShellUpdateActionButton.IsEnabled = true;
+            IgnoreShellUpdateButton.Visibility = Visibility.Collapsed;
+            ShellUpdateProgress.Visibility = Visibility.Collapsed;
+        }
+        catch (Exception exception)
+        {
+            _logger.Write($"Shell update download failed: {exception}");
+            ShellUpdateCard.Severity = InfoBarSeverity.Error;
+            ShellUpdateCard.Title = "外壳更新下载失败";
+            ShellUpdateCard.Message = $"{LogRedactor.Redact(exception.Message)}\n当前版本不受影响，可稍后重试。";
+            ShellUpdateActionButton.Content = "重试";
+            ShellUpdateActionButton.IsEnabled = true;
+            ShellUpdateProgress.Visibility = Visibility.Collapsed;
+        }
+        finally
+        {
+            _shellUpdateDownloadRunning = false;
+        }
+    }
+
+    private async void IgnoreShellUpdate_Click(object sender, RoutedEventArgs e)
+    {
+        if (_availableShellUpdate is not null)
+        {
+            _settings = _settings with
+            {
+                IgnoredShellVersions = (_settings.IgnoredShellVersions ?? Array.Empty<string>())
+                    .Append(_availableShellUpdate.AvailableVersion)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray()
+            };
+            if (_stagedShellUpdate is not null && string.Equals(
+                    _stagedShellUpdate.Version,
+                    _availableShellUpdate.AvailableVersion,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                _shellUpdateService.ClearStagedUpdate();
+                _stagedShellUpdate = null;
+            }
+
+            _availableShellUpdate = null;
+            await _settingsStore.SaveAsync(_settings);
+        }
+
+        ShellUpdateCard.IsOpen = false;
+    }
+
+    private void LaterShellUpdate_Click(object sender, RoutedEventArgs e) => ShellUpdateCard.IsOpen = false;
+
     private void OpenLogs_Click(object sender, RoutedEventArgs e) => OpenLogsFolder();
 
     private void OpenLogsFolder()
@@ -460,10 +643,13 @@ public sealed partial class MainWindow : Window
                 _settings.CloseBehavior,
                 _themeService.CurrentTheme,
                 GetShellVersion(),
-                _runtimeState.ActiveVersion),
+                _runtimeState.ActiveVersion,
+                _settings.ShellUpdateCheckEnabled),
             new SettingsDialogCallbacks(
                 ApplyCloseBehaviorAsync,
                 SetVisualThemeAsync,
+                ApplyShellUpdateCheckEnabledAsync,
+                () => CheckForShellUpdatesAsync(manual: true),
                 () => CheckForUpdatesAsync(manual: true),
                 OpenLogsFolder))
         {

@@ -52,9 +52,29 @@ Filename: "{app}\{#MyAppExeName}"; Description: "启动 LocalWhale"; Flags: nowa
 Type: filesandordirs; Name: "{localappdata}\LocalWhale"
 
 [Code]
+var
+  RestartAfterInstall: Boolean;
+
 function HasUsableVersion(const Version: String): Boolean;
 begin
   Result := (Version <> '') and (Version <> '0.0.0.0');
+end;
+
+procedure InitializeSetup();
+begin
+  RestartAfterInstall := Pos('/RESTARTAPP', GetCmdTail()) > 0;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  ResultCode: Integer;
+begin
+  // /RESTARTAPP is passed by LocalWhale's staged shell update: after a silent
+  // reinstall, launch the updated app once the new files are in place.
+  if (CurStep = ssPostInstall) and RestartAfterInstall then
+  begin
+    Exec(ExpandConstant('{app}\{#MyAppExeName}'), '', '', SW_SHOWNORMAL, ewNoWait, ResultCode);
+  end;
 end;
 
 function NeedsWebView2: Boolean;

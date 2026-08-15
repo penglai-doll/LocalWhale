@@ -148,27 +148,64 @@
             </Border>
         </Grid>
 
-        <InfoBar
-            x:Name="UpdateInfoBar"
+        <StackPanel
             Grid.Row="1"
-            Width="520"
             Margin="0,0,24,24"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
-            IsClosable="True"
-            IsOpen="False"
-            Severity="Informational"
-            Title="Harness 更新已就绪">
-            <InfoBar.Content>
-                <StackPanel Margin="0,8,0,0" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
-                    <Button Content="忽略此版本" Click="IgnoreUpdate_Click" />
-                    <Button Content="稍后" Click="LaterUpdate_Click" />
-                </StackPanel>
-            </InfoBar.Content>
-            <InfoBar.ActionButton>
-                <Button x:Name="ApplyUpdateButton" Style="{StaticResource AccentButtonStyle}" Content="更新" Click="ApplyUpdate_Click" />
-            </InfoBar.ActionButton>
-        </InfoBar>
+            Spacing="8">
+
+            <InfoBar
+                x:Name="ShellUpdateCard"
+                Width="520"
+                IsClosable="True"
+                IsOpen="False"
+                Severity="Informational"
+                Title="发现外壳新版本">
+                <InfoBar.Content>
+                    <StackPanel Margin="0,8,0,0" Spacing="8">
+                        <ProgressBar
+                            x:Name="ShellUpdateProgress"
+                            Maximum="100"
+                            Minimum="0"
+                            Visibility="Collapsed" />
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+                            <Button
+                                x:Name="IgnoreShellUpdateButton"
+                                Click="IgnoreShellUpdate_Click"
+                                Content="忽略此版本" />
+                            <Button Click="LaterShellUpdate_Click" Content="稍后" />
+                        </StackPanel>
+                    </StackPanel>
+                </InfoBar.Content>
+                <InfoBar.ActionButton>
+                    <Button
+                        x:Name="ShellUpdateActionButton"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Click="ShellUpdateActionButton_Click"
+                        Content="下载更新" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
+            <InfoBar
+                x:Name="UpdateInfoBar"
+                Width="520"
+                IsClosable="True"
+                IsOpen="False"
+                Severity="Informational"
+                Title="Harness 更新已就绪">
+                <InfoBar.Content>
+                    <StackPanel Margin="0,8,0,0" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+                        <Button Content="忽略此版本" Click="IgnoreUpdate_Click" />
+                        <Button Content="稍后" Click="LaterUpdate_Click" />
+                    </StackPanel>
+                </InfoBar.Content>
+                <InfoBar.ActionButton>
+                    <Button x:Name="ApplyUpdateButton" Style="{StaticResource AccentButtonStyle}" Content="更新" Click="ApplyUpdate_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
+        </StackPanel>
 
     </Grid>
 </Window>

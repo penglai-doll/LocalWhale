@@ -87,6 +87,46 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" Spacing="2">
+                        <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="自动检查外壳更新" />
+                        <TextBlock
+                            x:Name="ShellVersionRowText"
+                            Style="{StaticResource SettingsRowDescriptionStyle}"
+                            Text="Shell —" />
+                        <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="每天最多自动检查一次 GitHub 最新发布；也可点击右侧按钮立即检查。更新下载并校验后，重启 LocalWhale 即自动安装。" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="12">
+                        <ToggleSwitch
+                            x:Name="ShellUpdateCheckToggle"
+                            MinWidth="0"
+                            OffContent=""
+                            OnContent=""
+                            Toggled="ShellUpdateCheckToggle_Toggled" />
+                        <Button
+                            x:Name="CheckShellUpdatesButton"
+                            VerticalAlignment="Center"
+                            Click="CheckShellUpdatesButton_Click"
+                            Content="立即检查" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <TextBlock
+                x:Name="ShellCheckStatusText"
+                Margin="2,0,0,0"
+                FontSize="12"
+                Foreground="{ThemeResource ShellMutedForegroundBrush}"
+                Text=""
+                TextWrapping="Wrap" />
+            <Border Style="{StaticResource SettingsRowStyle}">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Spacing="2">
                         <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="Harness 更新" />
                         <TextBlock
                             x:Name="HarnessVersionText"

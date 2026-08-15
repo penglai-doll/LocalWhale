@@ -8,11 +8,14 @@ public sealed record SettingsDialogState(
     CloseBehavior CloseBehavior,
     VisualTheme VisualTheme,
     string ShellVersion,
-    string HarnessVersion);
+    string HarnessVersion,
+    bool ShellUpdateCheckEnabled);
 
 public sealed record SettingsDialogCallbacks(
     Func<CloseBehavior, Task> CloseBehaviorChanged,
     Func<VisualTheme, Task> ThemeChanged,
+    Func<bool, Task> ShellUpdateCheckEnabledChanged,
+    Func<Task<string>> CheckShellUpdates,
     Func<Task<string>> CheckHarnessUpdates,
     Action OpenLogs);
 
@@ -20,6 +23,31 @@ public sealed partial class SettingsDialog : ContentDialog
 {
     private readonly SettingsDialogCallbacks _callbacks;
     private bool _initialized;
+    private bool _checkingShellUpdates;
+
+    private async void ShellUpdateCheckToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+        await _callbacks.ShellUpdateCheckEnabledChanged(ShellUpdateCheckToggle.IsOn);
+    }
+
+    private async void CheckShellUpdatesButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_checkingShellUpdates) return;
+        _checkingShellUpdates = true;
+        CheckShellUpdatesButton.IsEnabled = false;
+        ShellCheckStatusText.Text = "正在检查外壳更新…";
+        try
+        {
+            ShellCheckStatusText.Text = await _callbacks.CheckShellUpdates();
+        }
+        finally
+        {
+            _checkingShellUpdates = false;
+            CheckShellUpdatesButton.IsEnabled = true;
+        }
+    }
+
     private bool _checkingHarnessUpdates;
 
     /// <summary>Set when the user asked for the About dialog; the owner shows it after this dialog closes.</summary>
@@ -32,6 +60,8 @@ public sealed partial class SettingsDialog : ContentDialog
         CloseToTrayToggle.IsOn = state.CloseBehavior == CloseBehavior.MinimizeToTray;
         HarnessVersionText.Text = $"当前 {state.HarnessVersion}";
         ShellVersionText.Text = $"Shell {state.ShellVersion} · 独立社区项目，与 DeepSeek 无隶属关系";
+        ShellVersionRowText.Text = $"当前 Shell {state.ShellVersion}（GitHub 最新发布）";
+        ShellUpdateCheckToggle.IsOn = state.ShellUpdateCheckEnabled;
         if (state.VisualTheme == VisualTheme.WhaleGirl)
         {
             WhaleGirlThemeRadio.IsChecked = true;
