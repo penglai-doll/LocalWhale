@@ -2,6 +2,7 @@
 .idea/
 .vscode/
 .worktrees/
+.superpowers/
 **/bin/
 **/obj/
 artifacts/
@@ -15,4 +16,3 @@ TestResults/
 *.snupkg
 bridge/node_modules/
 bridge/pnpm-lock.yaml
-
