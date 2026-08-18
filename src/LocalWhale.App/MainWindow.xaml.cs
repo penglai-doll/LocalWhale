@@ -804,7 +804,7 @@ public sealed partial class MainWindow : Window
     }
 
     private static string GetShellVersion() =>
-        Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.1.2";
+        Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.1.3";
 
     private async Task ValidateCandidateInWebViewAsync(Uri baseUri, CancellationToken cancellationToken)
     {
