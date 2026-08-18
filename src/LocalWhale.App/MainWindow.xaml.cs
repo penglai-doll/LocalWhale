@@ -8,6 +8,7 @@ using LocalWhale.Core.Runtime;
 using LocalWhale.Core.Updates;
 using Microsoft.UI;
 using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -35,6 +36,7 @@ public sealed partial class MainWindow : Window
     private readonly ShellThemeService _themeService;
     private readonly AppWindow _appWindow;
     private readonly NativeTrayIcon _trayIcon;
+    private readonly DispatcherQueue _uiDispatcher;
     private AppSettings _settings = AppSettings.Default;
     private RuntimeState _runtimeState = new(LocalWhalePaths.InitialHarnessVersion, null, new Dictionary<string, int>());
     private bool _loaded;
@@ -58,6 +60,7 @@ public sealed partial class MainWindow : Window
         ShowWindowCommand = new RelayCommand(ShowAndActivate);
         RestartHarnessCommand = new RelayCommand(() => _ = RestartHarnessAsync());
         ExitCommand = new RelayCommand(() => _ = ExitAsync());
+        _uiDispatcher = DispatcherQueue.GetForCurrentThread();
         InitializeComponent();
         _themeService = new ShellThemeService();
 
@@ -457,7 +460,7 @@ public sealed partial class MainWindow : Window
         catch (Exception exception)
         {
             _logger.Write($"Harness update failed: {exception}");
-            UpdateInfoBar.Title = "Harness 更新不兼容";
+            UpdateInfoBar.Title = "Harness 更新失败";
             UpdateInfoBar.Message = LogRedactor.Redact(exception.Message) + "\n现用版本保持不变。";
             UpdateInfoBar.Severity = InfoBarSeverity.Error;
             ApplyUpdateButton.IsEnabled = false;
@@ -806,7 +809,33 @@ public sealed partial class MainWindow : Window
     private static string GetShellVersion() =>
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.1.3";
 
-    private async Task ValidateCandidateInWebViewAsync(Uri baseUri, CancellationToken cancellationToken)
+    private Task ValidateCandidateInWebViewAsync(Uri baseUri, CancellationToken cancellationToken)
+    {
+        // PnpmRuntimeInstaller runs its pipeline on thread-pool continuations
+        // (ConfigureAwait(false)); WinUI XAML controls may only be created and
+        // touched on the UI thread, so marshal the whole validation over.
+        var completion = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        if (!_uiDispatcher.TryEnqueue(() => _ = RunOnUiAsync(completion, baseUri, cancellationToken)))
+        {
+            completion.SetException(new InvalidOperationException("The UI dispatcher was unavailable for the candidate WebView validation."));
+        }
+        return completion.Task;
+    }
+
+    private async Task RunOnUiAsync(TaskCompletionSource<object?> completion, Uri baseUri, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await ValidateCandidateOnUiThreadAsync(baseUri, cancellationToken);
+            completion.SetResult(null);
+        }
+        catch (Exception exception)
+        {
+            completion.SetException(exception);
+        }
+    }
+
+    private async Task ValidateCandidateOnUiThreadAsync(Uri baseUri, CancellationToken cancellationToken)
     {
         var candidateData = Path.Combine(_paths.LocalDataDirectory, "webview2-candidate", Guid.NewGuid().ToString("N"));
         var webView = new WebView2
