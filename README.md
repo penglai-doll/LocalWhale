@@ -22,7 +22,7 @@
 
 <p align="center">
   <a href="https://github.com/penglai-doll/LocalWhale/releases/latest"><strong>下载最新版 / Download</strong></a>
-  · <a href="docs/releases/v0.1.2.md">v0.1.2 更新日志 / Release notes</a>
+  · <a href="docs/releases/v0.1.3.md">v0.1.3 更新日志 / Release notes</a>
   · <a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a>
 </p>
 
@@ -189,7 +189,7 @@ licenses/                 上游 MIT License 与第三方声明
 
 | 组件 | 版本 |
 |---|---:|
-| LocalWhale | 0.1.2 |
+| LocalWhale | 0.1.3 |
 | DeepSeek Harness | 0.1.0-rc.6 |
 | Node.js | 24.18.1 |
 | pnpm | 11.7.0 |
