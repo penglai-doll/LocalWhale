@@ -166,14 +166,24 @@ public sealed partial class MainWindow : Window
             _ = MarkRuntimeStableAsync(runtime, _stableRuntimeCancellation.Token);
             SetConnectedState(runtime);
 
-            var environment = await CoreWebView2Environment.CreateWithOptionsAsync(null, _paths.WebView2Directory, null);
-            await HarnessWebView.EnsureCoreWebView2Async(environment);
-            HarnessWebView.CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
-            HarnessWebView.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = true;
-            HarnessWebView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
-            HarnessWebView.CoreWebView2.Settings.AreDevToolsEnabled = false;
-            HarnessWebView.CoreWebView2.ProcessFailed += (_, args) =>
-                DispatcherQueue.TryEnqueue(() => ShowFatalError(new InvalidOperationException($"WebView2 process failed: {args.ProcessFailedKind}")));
+            if (HarnessWebView.CoreWebView2 is null)
+            {
+                var environment = await CoreWebView2Environment.CreateWithOptionsAsync(null, _paths.WebView2Directory, null);
+                await HarnessWebView.EnsureCoreWebView2Async(environment);
+                var core = HarnessWebView.CoreWebView2
+                    ?? throw new InvalidOperationException("The main WebView2 did not initialize.");
+                core.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
+                core.Settings.AreBrowserAcceleratorKeysEnabled = true;
+                core.Settings.AreDefaultContextMenusEnabled = true;
+                core.Settings.AreDevToolsEnabled = false;
+                core.ProcessFailed += (_, args) =>
+                    DispatcherQueue.TryEnqueue(() => ShowFatalError(new InvalidOperationException($"WebView2 process failed: {args.ProcessFailedKind}")));
+            }
+
+            // A WebView2 control is initialized exactly once; after the candidate
+            // smoke introduced a second environment identity into this process,
+            // re-calling EnsureCoreWebView2Async throws ArgumentException, so an
+            // already-initialized control only ever navigates to the new runtime.
             HarnessWebView.Source = runtime.BaseUri;
         }
         catch (Exception exception)
