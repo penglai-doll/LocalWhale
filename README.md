@@ -21,6 +21,12 @@
 </p>
 
 <p align="center">
+  <strong>平台版本 / Platform editions</strong><br>
+  <a href="https://github.com/penglai-doll/LocalWhale/releases/tag/v0.1.3">Windows（本仓库）v0.1.3</a>
+  · <a href="https://github.com/penglai-doll/LocalWhale-macOS">macOS 0.1.0-preview.1</a>
+</p>
+
+<p align="center">
   <a href="https://github.com/penglai-doll/LocalWhale/releases/latest"><strong>下载最新版 / Download</strong></a>
   · <a href="docs/releases/v0.1.3.md">v0.1.3 更新日志 / Release notes</a>
   · <a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a>
