@@ -5,7 +5,7 @@ namespace LocalWhale.Core.Tests;
 public sealed class KnownLifecycleScriptsTests
 {
     [Fact]
-    public void InitialHarness_lifecycle_scripts_match_the_embedded_exact_allowlist()
+    public void Known_lifecycle_scripts_match_the_embedded_exact_allowlist()
     {
         var scripts = new[]
         {
@@ -24,5 +24,31 @@ public sealed class KnownLifecycleScriptsTests
         var result = KnownLifecycleScripts.Policy.Validate(scripts);
 
         Assert.True(result.IsCompatible);
+    }
+
+    [Fact]
+    public void Allowlist_accepts_future_package_versions_with_unchanged_scripts()
+    {
+        var scripts = new[]
+        {
+            new PackageLifecycleScript("@deepseek-ai/dsh-subprocess-local", "0.1.1-rc.2", "postinstall", "node scripts/ensure-spawn-helper.mjs"),
+            new PackageLifecycleScript("koffi", "3.1.6", "install", "node ./cnoke.cjs -P . -D src/koffi --prebuild --release"),
+            new PackageLifecycleScript("protobufjs", "7.6.6", "postinstall", "node scripts/postinstall")
+        };
+
+        var result = KnownLifecycleScripts.Policy.Validate(scripts);
+
+        Assert.True(result.IsCompatible);
+    }
+
+    [Fact]
+    public void Allowlist_still_rejects_a_changed_script_from_a_known_package()
+    {
+        var changed = new PackageLifecycleScript("koffi", "3.1.6", "install", "node ./cnoke.cjs -P . -D src/koffi --prebuild --release --download arbitrary-url");
+
+        var result = KnownLifecycleScripts.Policy.Validate([changed]);
+
+        Assert.False(result.IsCompatible);
+        Assert.Equal(changed, Assert.Single(result.UnknownScripts));
     }
 }
