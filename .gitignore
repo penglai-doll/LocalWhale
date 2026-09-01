@@ -16,3 +16,7 @@ TestResults/
 *.snupkg
 bridge/node_modules/
 bridge/pnpm-lock.yaml
+
+# local agent tool state
+.mimosa/
+.zcode/
