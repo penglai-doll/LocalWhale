@@ -9,5 +9,6 @@ LocalWhale redistributes or builds upon the following components:
 - [Microsoft Windows App SDK](https://learn.microsoft.com/windows/apps/windows-app-sdk/) 2.3.1 — Microsoft license terms and notices included with its redistributable files.
 - [Microsoft Edge WebView2](https://developer.microsoft.com/microsoft-edge/webview2/) — Microsoft software license terms. The installer carries Microsoft's Evergreen standalone installer for offline setup when the runtime is absent.
 - [Inno Setup](https://github.com/jrsoftware/issrc) 6 and its Simplified Chinese translation — Inno Setup license terms.
+- [dsh-ecosystem-spec](https://github.com/T-Auto/dsh-ecosystem-spec) (DSH Community Ecosystem Interoperability Specification) 0.15 — MIT License. The vendored copy in `third-party/dsh-ecosystem-spec/` keeps the upstream LICENSE; LocalWhale implements its plugin manifest and host-descriptor admission model so installed dsh plugins are evaluated against each Harness version.
 
 DeepSeek Harness retains its own data directory (`~/.dsh`). LocalWhale does not copy, export, or delete that directory during uninstall.

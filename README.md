@@ -28,7 +28,7 @@
 
 <p align="center">
   <a href="https://github.com/penglai-doll/LocalWhale/releases/latest"><strong>下载最新版 / Download</strong></a>
-  · <a href="docs/releases/v0.1.3.md">v0.1.3 更新日志 / Release notes</a>
+  · <a href="docs/releases/v0.1.4.md">v0.1.4 更新日志 / Release notes</a>
   · <a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a>
 </p>
 
@@ -120,13 +120,21 @@ bridge 只增加两个本机宿主端点：
 | 本地客户端更新安装包暂存 | `%LOCALAPPDATA%\LocalWhale\updates` | 删除 |
 | 脱敏日志 | `%LOCALAPPDATA%\LocalWhale\logs` | 删除 |
 
-LocalWhale 不读取、复制或迁移 Harness API Key。日志会脱敏 token、密钥形式的参数和敏感环境变量，并保留最多 14 天、总量不超过 50 MiB。
+LocalWhale 不读取、复制或迁移 Harness API Key。插件兼容性评估只读取 `.dsh` 下的 `dsh-plugin.json` 清单文件。日志会脱敏 token、密钥形式的参数和敏感环境变量，并保留最多 14 天、总量不超过 50 MiB。
 
 ### Harness 更新保护
 
 应用成功启动后会检查官方 npm registry，自动检查最多每 24 小时一次，也可以从设置对话框手动检查。发现新版后可更新、稍后或忽略该版本。
 
 候选版本不会直接覆盖当前版本。更新器会在临时目录中生成锁文件、验证 registry integrity、预取并离线安装，然后使用临时 `DSH_HOME` 和 WebView2 数据目录执行 bridge、首页加载、前端启动错误与优雅关闭冒烟测试。未知生命周期脚本会使候选版被拒绝；验证失败时当前会话和当前已知良好版本保持不变。新版连续启动失败时运行状态策略会回滚到上一版本。
+
+### 插件生态与版本适配（dsh-ecosystem-spec）
+
+LocalWhale 实现了 [dsh-ecosystem-spec](https://github.com/T-Auto/dsh-ecosystem-spec)（DSH 社区生态互操作规范）0.15 的插件准入模型，规范原文与 Host Descriptor JSON Schema 已随仓库引入 `third-party/dsh-ecosystem-spec/`。在 `.dsh` 目录（或 `DSH_HOME`）中带有 `dsh-plugin.json` 清单的插件，会在每次发现或验证 Harness 更新时按五状态准入模型评估：兼容、降级运行（缺失的可选契约按清单声明的 fallback 回退，不影响更新）、需授权、不兼容或无法判定，结果逐项写入日志并在更新提示中汇总显示。
+
+- **插件使用者**：dsh 升级不再让插件“无声失效”——更新卡片会先告诉你哪些插件兼容、哪些降级运行。评估只读取 `dsh-plugin.json` 清单文件，不触碰会话、凭据或其他 `.dsh` 数据。
+- **插件开发者**：为插件提供符合规范的 `dsh-plugin.json`（声明 `manifestVersion: "0.15"`、`facets.host.apiVersion` 与 `requires.contracts`；可选契约务必附带 `fallback` 描述），即可获得跨 dsh 版本的兼容性判定。LocalWhale 通过 `HarnessContractProfile` 适配表把每个 Harness 版本映射到它向插件暴露的契约坐标；新 dsh 版本未登记时回退到最新已知适配，不会因此阻断评估或更新。
+- 生命周期脚本白名单同样遵循“内容锁定而非版本锁定”：同一依赖在新版本中脚本内容不变即自动放行。
 
 ### 本地客户端更新（v0.1.2 起）
 
@@ -195,7 +203,7 @@ licenses/                 上游 MIT License 与第三方声明
 
 | 组件 | 版本 |
 |---|---:|
-| LocalWhale | 0.1.3 |
+| LocalWhale | 0.1.4 |
 | DeepSeek Harness | 0.1.0-rc.6 |
 | Node.js | 24.18.1 |
 | pnpm | 11.7.0 |

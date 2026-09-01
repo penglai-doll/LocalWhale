@@ -4,6 +4,7 @@ using System.Windows.Input;
 using LocalWhale.Core.Logging;
 using LocalWhale.Core.Models;
 using LocalWhale.Core.Persistence;
+using LocalWhale.Core.Plugins;
 using LocalWhale.Core.Runtime;
 using LocalWhale.Core.Updates;
 using Microsoft.UI;
@@ -32,6 +33,7 @@ public sealed partial class MainWindow : Window
     private readonly HarnessRuntimeManager _runtimeManager;
     private readonly HttpClient _updateHttpClient = new() { Timeout = TimeSpan.FromSeconds(15) };
     private readonly HarnessUpdateService _updateService;
+    private readonly PluginCompatibilityService _pluginCompatibilityService = new();
     private readonly ShellUpdateService _shellUpdateService;
     private readonly ShellThemeService _themeService;
     private readonly AppWindow _appWindow;
@@ -149,18 +151,10 @@ public sealed partial class MainWindow : Window
         try
         {
             _runtimeState = await _runtimeStateStore.LoadAsync() ?? _runtimeState;
-            var dshHome = Environment.GetEnvironmentVariable("DSH_HOME");
-            if (string.IsNullOrWhiteSpace(dshHome))
-            {
-                dshHome = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ".dsh");
-            }
-
             var runtime = await HarnessStartupCoordinator.StartAsync(
                 _runtimeManager,
                 _runtimeState.ActiveVersion,
-                Path.GetFullPath(dshHome),
+                GetDshHome(),
                 _logger.Write,
                 CancellationToken.None);
             _ = MarkRuntimeStableAsync(runtime, _stableRuntimeCancellation.Token);
@@ -247,6 +241,52 @@ public sealed partial class MainWindow : Window
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+        }
+    }
+
+    private static string GetDshHome()
+    {
+        var dshHome = Environment.GetEnvironmentVariable("DSH_HOME");
+        if (string.IsNullOrWhiteSpace(dshHome))
+        {
+            dshHome = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".dsh");
+        }
+
+        return Path.GetFullPath(dshHome);
+    }
+
+    /// <summary>
+    /// Reads dsh-plugin.json manifests under the dsh home (never other files) and reports per-plugin
+    /// admission states for one Harness version, per the vendored dsh-ecosystem-spec. Failures are
+    /// logged only; they never gate the update itself.
+    /// </summary>
+    private string? DescribePluginCompatibility(string harnessVersion)
+    {
+        try
+        {
+            var compatibility = _pluginCompatibilityService.Evaluate(harnessVersion, GetDshHome());
+            foreach (var result in compatibility.Results)
+            {
+                _logger.Write(
+                    $"Plugin admission for {harnessVersion}: {result.Manifest.Id}@{result.Manifest.PluginVersion} -> {result.State} ({result.ReasonCode})" +
+                    (result.MissingOptionalContracts.Count > 0 ? $" missing optional: {string.Join(", ", result.MissingOptionalContracts)}" : string.Empty) +
+                    (result.DeniedPermissions.Count > 0 ? $" denied permissions: {string.Join(", ", result.DeniedPermissions)}" : string.Empty) +
+                    (result.UnknownContracts.Count > 0 ? $" unknown contracts: {string.Join(", ", result.UnknownContracts)}" : string.Empty));
+            }
+
+            foreach (var error in compatibility.ScanErrors)
+            {
+                _logger.Write($"Plugin manifest unreadable ({error.SourcePath}): {error.Message}");
+            }
+
+            return PluginCompatibilityService.Describe(compatibility);
+        }
+        catch (Exception exception)
+        {
+            _logger.Write($"Plugin compatibility check skipped: {exception.Message}");
+            return null;
         }
     }
 
@@ -400,8 +440,10 @@ public sealed partial class MainWindow : Window
             }
 
             _stagedRuntime = null;
+            var discoveredPluginSummary = DescribePluginCompatibility(_availableUpdate.AvailableVersion);
             UpdateInfoBar.Title = "发现 Harness 更新";
-            UpdateInfoBar.Message = $"官方 npm 提供 {_availableUpdate.AvailableVersion}；更新前会在临时目录完成安装、脚本白名单和启动冒烟。";
+            UpdateInfoBar.Message = $"官方 npm 提供 {_availableUpdate.AvailableVersion}；更新前会在临时目录完成安装、脚本白名单和启动冒烟。"
+                + (discoveredPluginSummary is null ? string.Empty : "\n" + discoveredPluginSummary);
             UpdateInfoBar.Severity = InfoBarSeverity.Informational;
             ApplyUpdateButton.Content = "更新";
             ApplyUpdateButton.IsEnabled = true;
@@ -453,8 +495,10 @@ public sealed partial class MainWindow : Window
                 UpdateInfoBar.Message = "正在生成锁文件、校验 integrity、离线安装并启动候选实例；当前会话不会中断。";
                 UpdateInfoBar.Severity = InfoBarSeverity.Informational;
                 _stagedRuntime = await _updateService.StageAndValidateAsync(_availableUpdate.AvailableVersion, CancellationToken.None);
+                var pluginSummary = DescribePluginCompatibility(_stagedRuntime.Version);
                 UpdateInfoBar.Title = "Harness 更新已验证";
-                UpdateInfoBar.Message = $"{_stagedRuntime.Version} 已通过 bridge、首页插件和优雅关闭冒烟。可以重启切换。";
+                UpdateInfoBar.Message = $"{_stagedRuntime.Version} 已通过 bridge、首页插件和优雅关闭冒烟。可以重启切换。"
+                    + (pluginSummary is null ? string.Empty : "\n" + pluginSummary);
                 UpdateInfoBar.Severity = InfoBarSeverity.Success;
                 ApplyUpdateButton.Content = "重启并应用";
                 ApplyUpdateButton.IsEnabled = true;
@@ -817,7 +861,7 @@ public sealed partial class MainWindow : Window
     }
 
     private static string GetShellVersion() =>
-        Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.1.3";
+        Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.1.4";
 
     private Task ValidateCandidateInWebViewAsync(Uri baseUri, CancellationToken cancellationToken)
     {
