@@ -127,17 +127,31 @@ public sealed class PnpmRuntimeInstaller : IRuntimeInstaller
             var runtime = await manager.StartAsync(version, cancellationToken).ConfigureAwait(false);
             using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
             var html = await httpClient.GetStringAsync(runtime.BaseUri, cancellationToken).ConfigureAwait(false);
-            if (!html.Contains("window.__DSH_BOOT__", StringComparison.Ordinal) || !html.Contains("@deepseek-ai/dsh-client-runtime", StringComparison.Ordinal))
-            {
-                throw new InvalidDataException("Candidate Harness frontend did not expose a complete client boot manifest.");
-            }
-
+            ValidateFrontendBootHtml(html);
             if (_browserSmoke is not null) await _browserSmoke(runtime.BaseUri, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
             await manager.StopAsync(CancellationToken.None).ConfigureAwait(false);
             TemporaryDirectoryCleaner.DeleteTreeWithin(runtimeDirectory, smokeDirectory);
+        }
+    }
+
+    /// <summary>
+    /// Accepts either frontend generation: Harness ≤0.1.0 injects an inline
+    /// `window.__DSH_BOOT__` manifest referencing `@deepseek-ai/dsh-client-runtime`, while
+    /// 0.1.1+ serves the Vite app shell (`#root` plus a module script) whose boot manifest is
+    /// fetched by the client at runtime. Anything else is not a Harness frontend page.
+    /// </summary>
+    public static void ValidateFrontendBootHtml(string html)
+    {
+        var hasLegacyBootManifest = html.Contains("window.__DSH_BOOT__", StringComparison.Ordinal)
+            && html.Contains("@deepseek-ai/dsh-client-runtime", StringComparison.Ordinal);
+        var hasAppShell = html.Contains("id=\"root\"", StringComparison.Ordinal)
+            && html.Contains("type=\"module\"", StringComparison.Ordinal);
+        if (!hasLegacyBootManifest && !hasAppShell)
+        {
+            throw new InvalidDataException("Candidate Harness frontend did not expose a boot manifest or an app shell.");
         }
     }
 

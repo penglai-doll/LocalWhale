@@ -861,7 +861,7 @@ public sealed partial class MainWindow : Window
     }
 
     private static string GetShellVersion() =>
-        Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.1.4";
+        Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.1.5";
 
     private Task ValidateCandidateInWebViewAsync(Uri baseUri, CancellationToken cancellationToken)
     {
@@ -916,9 +916,11 @@ public sealed partial class MainWindow : Window
             var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(15);
             while (DateTimeOffset.UtcNow < deadline)
             {
+                // Harness ≤0.1.0 exposes window.__DSH_BOOT__ inline; 0.1.1+ fetches the boot
+                // manifest at runtime. A rendered #root is the acceptance signal for both.
                 var json = await webView.CoreWebView2.ExecuteScriptAsync(
-                    "JSON.stringify({boot:Boolean(window.__DSH_BOOT__),root:Boolean(document.querySelector('#root')?.children.length)})");
-                if (json.Contains("\\\"boot\\\":true", StringComparison.Ordinal) && json.Contains("\\\"root\\\":true", StringComparison.Ordinal)) return;
+                    "JSON.stringify({root:Boolean(document.querySelector('#root')?.children.length)})");
+                if (json.Contains("\\\"root\\\":true", StringComparison.Ordinal)) return;
                 await Task.Delay(250, cancellationToken);
             }
 
