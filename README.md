@@ -1,3 +1,16 @@
+> [!IMPORTANT]
+> **项目已归档 · 停止维护（2026-09-30）**
+>
+> 官方 **DeepSeek Harness Desktop（dsh-desktop）** 已推出，LocalWhale 为 DSH 提供桌面宿主的历史使命已经完成。本仓库停止维护，不再发布更新或修复；代码、文档和历史版本保留，供学习与参考。
+>
+> 请转向 [DeepSeek Harness 官方入口](https://deepseek.com/harness/)；官方桌面端源码与说明见 [deepseek-ai/deepseek-harness/apps/desktop](https://github.com/deepseek-ai/deepseek-harness/tree/master/apps/desktop)。感谢所有使用、反馈和支持 LocalWhale 的朋友。
+>
+> **Archived · No longer maintained (2026-09-30)**
+>
+> The official **DeepSeek Harness Desktop (dsh-desktop)** is now available, and LocalWhale has fulfilled its purpose as a desktop host for DSH. This repository is no longer maintained and will receive no further updates or fixes. Its code, documentation, and past releases remain available for learning and reference.
+>
+> Please use the [official DeepSeek Harness page](https://deepseek.com/harness/). The official desktop source and documentation are available in [deepseek-ai/deepseek-harness/apps/desktop](https://github.com/deepseek-ai/deepseek-harness/tree/master/apps/desktop). Thank you to everyone who used, tested, and supported LocalWhale.
+
 <p align="center">
   <img src="src/LocalWhale.App/Assets/Brand/LocalWhaleMark.svg" width="104" alt="LocalWhale whale-tail mark">
 </p>
